@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AndroidPermissions</string>
+    <string name="request_contacts">Request Contacts</string>
+    <string name="request_location">Request Location</string>
+    <string name="request_storage">Request Storage</string>
+    <string name="request_calendar">Request Calendar</string>
+    <string name="request_camera">Request Camera</string>
+    <string name="camera_unavailable"><b>Camera could not be opened.</b>\nThis occurs when the camera is not available (for example it is already in use) or if the system has denied access (for example when camera access has been disabled).</string>
+
+
+</resources>
