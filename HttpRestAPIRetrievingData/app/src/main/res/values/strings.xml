@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">HttpRestAPIRetrievingData</string>
+    <string name="pull_it">Pull It!</string>
+</resources>
