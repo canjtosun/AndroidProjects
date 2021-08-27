@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">RecyclerView</string>
+
+    <string name="turkey_sports">Although soccer is the most popular sport in Turkey, basketball, volleyball, handball, track-and-field and wrestling
+        (which is considered as the ancestral sport) are also popular. Furthermore, important international successes have been attained in weightlifting,
+        boxing, tae-kwon-do, judo and archery in recent years.
+    </string>
+
+    <string name="us_sports">Based on revenue, the five major professional sports leagues in the United States are Major League Baseball (MLB),
+        the National Basketball Association (NBA), the National Football League (NFL), Major League Soccer (MLS) and the National Hockey League (NHL).
+    </string>
+
+    <string name="italy_sports">Sport in Italy has a long tradition. In several sports, both individual and team, Italy has good representation and many successes.
+        Football is the most popular sport in Italy. Italy won the 2006 FIFA World Cup, and is (along with Germany) currently the second most successful football
+        team in World Cup history, after Brazil, having won four FIFA World Cup championships.
+        Basketball, volleyball, and cycling are the next most popular/played sports, with Italy having a rich tradition in all three. Italy also has strong
+        traditions in swimming, water polo, rugby union, tennis, athletics, fencing and Formula One.
+    </string>
+
+    <string name="spain_sports">Sport in Spain in the second half of the 20th century has always been dominated by football. Other popular sport activities
+        include basketball, tennis, cycling, handball, motorcycling, Judo, Formula One, water sports, rhythmic gymnastics, golf and skiing. Spain has also hosted
+        a number of international events such as the 1992 Summer Olympics in Barcelona and the 1982 FIFA World Cup.
+    </string>
+
+    <string name="portugal_sports">Sports in Portugal are important in Portuguese culture. Football is the most popular sport in Portugal. Other than football,
+        many other professional or semi-professional well organized sport competitions take place every season in Portugal, including basketball, swimming,
+        athletics, tennis, gymnastics, futsal, rink hockey, team handball, volleyball, surfing, canoeing and rugby union championships among the hundreds of
+        sports played in this country.
+    </string>
+
+
+
+</resources>

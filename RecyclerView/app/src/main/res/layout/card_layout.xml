@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp"
+    app:cardMaxElevation="10dp"
+    app:cardPreventCornerOverlap="true"
+    app:cardUseCompatPadding="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!--ImageVIew to display our Course Image-->
+        <ImageView
+            android:id="@+id/imageView1_flag"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Flag"
+            android:padding="5dp" />
+
+        <!--Text View to display Course Name-->
+        <TextView
+            android:id="@+id/country1_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@id/imageView1_flag"
+            android:text="Country"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/country1_capital"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="40dp"
+            android:layout_toEndOf="@id/imageView1_flag"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:text="Capital" />
+
+        <TextView
+            android:id="@+id/country1_phone_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="150dp"
+            android:layout_marginTop="40dp"
+            android:layout_toEndOf="@id/imageView1_flag"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:text="Code" />
+
+        <TextView
+            android:id="@+id/country1_website"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="180dp"
+            android:layout_marginTop="100dp"
+            android:layout_toEndOf="@id/imageView1_flag"
+            android:text="Go to website"
+            android:textColor="#DCD4D4"
+            android:visibility="invisible"
+            android:textSize="1sp" />
+
+        <TextView
+            android:id="@+id/country1_information"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="100dp"
+            android:layout_toEndOf="@id/imageView1_flag"
+            android:text="Go to info"
+            android:textColor="#DCD4D4"
+            android:visibility="invisible"
+            android:textSize="1sp" />
+
+    </RelativeLayout>
+
+
+
+
+</androidx.cardview.widget.CardView>
