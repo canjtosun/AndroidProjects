@@ -1,8 +1,14 @@
 package com.example.recyclerview;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +17,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
@@ -20,6 +28,8 @@ public class CountryAdapter extends RecyclerView.Adapter<CountryAdapter.ViewHold
     final private ArrayList<Country> countryArrayList;
     private static final String MESSAGE = "message";
     private static final String WEBSITE = "website";
+    private static final String CHANNEL_ID = "CHANNEL_ID";
+    private static final int NOTIFICATIONID = 1;
 
     public CountryAdapter(Context context, ArrayList<Country> countryArrayList) {
         this.context = context;
@@ -72,6 +82,7 @@ public class CountryAdapter extends RecyclerView.Adapter<CountryAdapter.ViewHold
         @Override
         public void onClick(View view) {
             goNextActivity(view);
+            addNotification(view);
         }
 
 
@@ -89,6 +100,26 @@ public class CountryAdapter extends RecyclerView.Adapter<CountryAdapter.ViewHold
             view.getContext().startActivity(intent);
 
         }
+
+        private void addNotification(View view){
+//            Intent notificationIntent = new Intent(view.getContext(), CountryInformation.class);
+//            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//            PendingIntent pendingIntent = PendingIntent.getActivity(view.getContext(), 0, notificationIntent, 0);
+//
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder(view.getContext(), CHANNEL_ID)
+//                    .setSmallIcon(R.drawable.flag_us)
+//                    .setContentTitle("My notification")
+//                    .setContentText("Hey WE missed you")
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//
+//
+//            // Add as notification
+//            NotificationManagerCompat manager = NotificationManagerCompat.from(view.getContext());
+//            manager.notify(NOTIFICATIONID, builder.build());
+
+        }
+
     }
 
 
