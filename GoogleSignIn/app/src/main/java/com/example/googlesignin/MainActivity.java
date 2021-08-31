@@ -1,17 +1,29 @@
 package com.example.googlesignin;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -27,12 +39,16 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener{
 
     private static final String TAG = "MainActivity";
+    public static final String CHANNEL_1_ID = "channel1";
     private static final int SIGNINID = 9001;
+
+
 
     private GoogleSignInClient mGoogleSignInClient;
     private TextView mStatusTextView;
     private TextView firstNameView, lastNameView, emailView, personIdView;
     private ImageView personPhotoView;
+    private NotificationManagerCompat notificationManager;
 
 
     @Override
@@ -62,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
 
+
+        notificationManager = NotificationManagerCompat.from(this);
+
     }
 
     @Override
@@ -69,6 +88,20 @@ public class MainActivity extends AppCompatActivity implements
         super.onStart();
         GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(googleSignInAccount);
+        Log.d(TAG, "onStart: ");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sendOnChannel1();
+        Log.d(TAG, "onDestroy: ");
     }
 
     public void handleSignInResult(Task<GoogleSignInAccount> task){
@@ -129,6 +162,37 @@ public class MainActivity extends AppCompatActivity implements
             personIdView.setText("");
         }
     }
+
+    public void sendOnChannel1(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel1 = new NotificationChannel(CHANNEL_1_ID, "channel1", NotificationManager.IMPORTANCE_DEFAULT);
+            channel1.setDescription("this is channel 1");
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel1);
+        }
+
+        Intent activityIntent = new Intent(this,MainActivity.class);
+
+        //turn back to app
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, activityIntent, 0);
+
+
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_1_ID)
+                .setSmallIcon(R.drawable.ic_one)
+                .setContentTitle("Google")
+                .setContentText("Why did you close the app!")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .build();
+
+        notificationManager.notify(1, notification);
+    }
+
+
+
 
     @Override
     public void onClick(View view) {
