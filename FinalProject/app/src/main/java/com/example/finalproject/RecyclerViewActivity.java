@@ -1,7 +1,10 @@
 package com.example.finalproject;
 
-import static com.example.finalproject.MainActivity.INFOKEY;
+import static com.example.finalproject.IndividualUserDetails.INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE;
 import static com.example.finalproject.MainActivity.JSON_PULL_PUSH;
+import static com.example.finalproject.MainActivity.REQUEST_CODE;
+import static com.example.finalproject.MainActivity.REQUEST_CODE_VALUE;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
@@ -20,32 +23,32 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+
 
 
 public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "RecyclerViewActivity";
+    protected static final String JSON_SAVE_RETRIEVE = "jsonX";
     public static final String CHANNEL_1_ID = "channel1";
+    private static final int RECYCLER_ACTIVITY_VALUE = 90;
     private NotificationManagerCompat notificationManager;
 
-
     private RecyclerView recyclerView;
+
     private ArrayList<User> userArrayList;
-    UserAdapter userAdapter;
+    public static boolean isActivityCalled = false;
 
 
     private Button signOutButton;
@@ -56,19 +59,28 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
 
+        notificationManager = NotificationManagerCompat.from(this);
+
+
+
         recyclerView = findViewById(R.id.recViewUser);
         signOutButton = findViewById(R.id.sign_in_button);
 
-        //retrieve data with using serializable from json
-        userArrayList = (ArrayList<User>) getIntent().getSerializableExtra(JSON_PULL_PUSH);
+        Log.d(TAG, "onCreate: " + getIntent().getExtras().getInt(REQUEST_CODE));
+        if(getIntent().getExtras().getInt(REQUEST_CODE) == INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE){
+            Log.d(TAG, "onCreate: You are Coming 'back' from Individual User Information page");
+            retrieveData();
+        }
 
-        //retrieve data when you close the app
-        retrieveData();
-
+        else if(getIntent().getExtras().getInt(REQUEST_CODE) == RECYCLER_ACTIVITY_VALUE){
+            Log.d(TAG, "onCreate: You are Coming from Main Activity page" + userArrayList);
+            userArrayList = (ArrayList<User>) getIntent().getSerializableExtra(JSON_PULL_PUSH);
+            Log.d(TAG, "onCreate: You just initialized the userArrayList->" + userArrayList);
+        }
 
 
         //adapter
-        userAdapter = new UserAdapter(this, userArrayList);
+        UserAdapter userAdapter = new UserAdapter(this, userArrayList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(userAdapter);
@@ -76,24 +88,25 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         findViewById(R.id.sign_out_button).setOnClickListener(this);
 
-        notificationManager = NotificationManagerCompat.from(this);
+
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //retrieve data when you close the app
-        retrieveData();
-        Log.d(TAG, "onResume: ");
+        isActivityCalled = false;
     }
+
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ");
         saveData();
-        sendOnChannel1();
+        if(isActivityCalled == false) {
+            sendOnChannel1();
+        }
+
     }
 
     @Override
@@ -103,53 +116,58 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     }
 
+
     private void signOutAndGoBack() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.signOut();
-        startActivity(new Intent(this, MainActivity.class));
+        Intent intent = new Intent(this, MainActivity.class);
+        isActivityCalled = true;
+        startActivity(intent);
+
     }
 
     public void saveData(){
-        SharedPreferences sharedPreferences = getSharedPreferences("Mypref", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
         Gson gson = new Gson();
-        String jsonText = gson.toJson(userArrayList);
-        editor.putString("aa", jsonText);
-        editor.apply();
+        String json = gson.toJson(userArrayList);
+        editor.putString(JSON_SAVE_RETRIEVE, json);
+        editor.commit();
 
     }
 
     public void retrieveData(){
-        SharedPreferences sharedPreferences = getSharedPreferences("Mypref", MODE_PRIVATE);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String json = sharedPrefs.getString(JSON_SAVE_RETRIEVE, "");
 
-        String jsonText = sharedPreferences.getString("aa","");
-        userArrayList =
-                new Gson().fromJson(jsonText, new TypeToken<ArrayList<User>>() {
-                }.getType());
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<User>>() {}.getType();
+        userArrayList = gson.fromJson(json, type);
+
     }
+
 
     public void sendOnChannel1(){
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel1 = new NotificationChannel(CHANNEL_1_ID, "channel1", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel1 = new NotificationChannel(CHANNEL_1_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
             channel1.setDescription("this is channel 1");
 
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
         }
 
-        //turn back to app
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), 0);
-
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_1_ID)
                 .setSmallIcon(android.R.drawable.btn_star)
                 .setContentTitle("Final Project")
                 .setContentText("Don't Forget About Me!")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)

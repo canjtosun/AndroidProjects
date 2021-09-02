@@ -25,9 +25,9 @@ import java.util.List;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     Context context;
-    final private List<User> userArrayList;
+    private ArrayList<User> userArrayList;
 
-    public UserAdapter(Context context, List<User> userArrayList) {
+    public UserAdapter(Context context, ArrayList<User> userArrayList) {
         this.context = context;
         this.userArrayList = userArrayList;
     }
@@ -48,7 +48,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         holder.generalProfilePic.setTransitionName(user.getProfilePic());
         Picasso.get().load(user.getProfilePic()).into(holder.generalProfilePic);
         holder.generalEmail.setText(user.getEmail());
-
     }
 
 
@@ -69,24 +68,29 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             generalEmail = itemView.findViewById(R.id.general_email);
 
             itemView.setOnClickListener(this);
+
         }
 
         public void ShowAllInformation(View view){
             intent = new Intent(view.getContext(), IndividualUserDetails.class);
 
-            String profPicurl = generalProfilePic.getTransitionName();
+            String profPicUrl = generalProfilePic.getTransitionName();
             String firstAndLastName = generalFirstName.getText().toString();
             String email = generalEmail.getText().toString();
 
-            intent.putExtra("profilePic", profPicurl);
+            intent.putExtra("profilePic", profPicUrl);
             intent.putExtra("firstAndLastName", firstAndLastName);
             intent.putExtra("email", email);
+
+            RecyclerViewActivity.isActivityCalled = true;
             view.getContext().startActivity(intent);
+
         }
 
         @Override
         public void onClick(View view) {
             ShowAllInformation(view);
+
         }
 
 

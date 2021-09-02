@@ -3,19 +3,24 @@ package com.example.finalproject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AbsListView;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -25,17 +30,16 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
+
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.acl.NotOwnerException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -50,18 +54,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SIGN_IN_ID = 9001;
     private static final String INFOURL = "http://jsonplaceholder.typicode.com/users";
     private static final String PICSURL = "https://robohash.org/";
+    private static final String CHANNEL_1_ID = "channel1";
+
+
     protected static final String INFOKEY = "infoKey";
     protected static final String JSON_PULL_PUSH = "jsonPullPush";
+    protected static final String REQUEST_CODE = "requestCode";
+    protected static final int REQUEST_CODE_VALUE = 90;
+
+
     private OkHttpClient client;
-    private ArrayList<User> usersList;
+    private ArrayList<User> userArrayList;
     private Gson gson;
     User[] users;
 
 
     private ImageView googleLogoImageView;
     private GoogleSignInClient googleSignInClient;
-    //private NotificationManagerCompat notificationManager;
-
 
 
     @Override
@@ -69,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        usersList = new ArrayList<>();
+        userArrayList = new ArrayList<>();
         gson = new Gson();
         client = new OkHttpClient();
 
@@ -94,12 +103,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
 
+
+//        //add yourself very first before update UI, otherwise you will get duplicate value of yourself
+//        if(googleSignInAccount != null){
+//            users = new User(googleSignInAccount.getDisplayName().toString(), googleSignInAccount.getEmail().toString(), googleSignInAccount.getPhotoUrl().toString());
+//            userArrayList.add(0,me);
+//        }
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
+        if(googleSignInAccount != null)
+            retrieveData();
         updateUI(googleSignInAccount);
         Log.d(TAG, "onStart: ");
     }
@@ -108,20 +126,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
-
     }
+
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ");
-
+        saveData();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy: ");
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
     }
 
     public void handleSignInResult(Task<GoogleSignInAccount> task){
@@ -145,40 +168,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void signIn(){
-        Log.d(TAG, "signIn: clicked");
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, SIGN_IN_ID);
-
     }
 
     public void updateUI(@Nullable GoogleSignInAccount googleSignInAccount){
-        //if already signed in
-        if(googleSignInAccount != null){
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-            Intent intent = new Intent(this, RecyclerViewActivity.class);
-            intent.putExtra(JSON_PULL_PUSH, usersList);
-            startActivity(intent);
 
+        if(googleSignInAccount != null){
+
+            Intent intent = new Intent(this, RecyclerViewActivity.class);
+            intent.putExtra(REQUEST_CODE, REQUEST_CODE_VALUE);
+            intent.putExtra(JSON_PULL_PUSH, userArrayList);
+            startActivityForResult(intent, REQUEST_CODE_VALUE);
+            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
         }
         else{
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
         }
     }
 
-    public void pullTheInformation(String infoUrl, String picsurl) throws IOException{
+    public void pullTheInformation(String infoUrl) throws IOException{
 
         Request request = new Request.Builder()
                 .url(infoUrl)
                 .build();
+
+
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, "server down", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "run: you are in on failure. Something is very wrong: " + e.getMessage());
                     }
                 });
             }
@@ -187,23 +209,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 ResponseBody responseBody = response.body();
                 users = gson.fromJson(responseBody.string(),User[].class);
-                runOnUiThread( () -> newView(users));
-                Log.d(TAG, "onResponse: information pulled");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        newView(users);
+                    }
+                });
             }
         });
 
     }
 
     public void newView(User[] users){
-        usersList.clear();
         int i = 0;
         for(User u: users){
             u.setProfilePic(PICSURL + i);
-            usersList.add(u);
+            userArrayList.add(u);
             i++;
         }
     }
 
+
+    public void saveData(){
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(userArrayList);
+        editor.putString(JSON_PULL_PUSH, json);
+        editor.commit();
+
+    }
+
+    public void retrieveData(){
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String json = sharedPrefs.getString(JSON_PULL_PUSH, "");
+
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<User>>() {}.getType();
+        userArrayList = gson.fromJson(json, type);
+
+    }
 
 
 
@@ -212,11 +258,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.sign_in_button:
                 signIn();
+
                 try {
-                    pullTheInformation(INFOURL, PICSURL);
+                    pullTheInformation(INFOURL);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 break;
         }
     }
