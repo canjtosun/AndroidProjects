@@ -3,23 +3,16 @@ package com.example.finalproject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
-
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
+
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -38,6 +31,7 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 import okhttp3.Call;
@@ -54,10 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SIGN_IN_ID = 9001;
     private static final String INFOURL = "http://jsonplaceholder.typicode.com/users";
     private static final String PICSURL = "https://robohash.org/";
-    private static final String CHANNEL_1_ID = "channel1";
 
 
-    protected static final String INFOKEY = "infoKey";
     protected static final String JSON_PULL_PUSH = "jsonPullPush";
     protected static final String REQUEST_CODE = "requestCode";
     protected static final int REQUEST_CODE_VALUE = 90;
@@ -95,7 +87,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //build the google sign in options and assign to sign in client
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
+                .requestProfile()
                 .build();
+
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
 
         //create sign in button and set size and color
@@ -103,12 +97,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
 
-
-//        //add yourself very first before update UI, otherwise you will get duplicate value of yourself
-//        if(googleSignInAccount != null){
-//            users = new User(googleSignInAccount.getDisplayName().toString(), googleSignInAccount.getEmail().toString(), googleSignInAccount.getPhotoUrl().toString());
-//            userArrayList.add(0,me);
-//        }
 
     }
 
@@ -118,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if(googleSignInAccount != null)
             retrieveData();
+
         updateUI(googleSignInAccount);
         Log.d(TAG, "onStart: ");
     }
@@ -127,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         Log.d(TAG, "onResume: ");
     }
-
 
     @Override
     protected void onPause() {
@@ -143,7 +131,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        //super.onBackPressed();
+        Toast.makeText(this, "There is no back, you are in log in page", Toast.LENGTH_SHORT)
+                .show();
 
     }
 
@@ -157,6 +147,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             updateUI(null);
         }
     }
+
+
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -177,9 +171,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(googleSignInAccount != null){
 
             Intent intent = new Intent(this, RecyclerViewActivity.class);
+
+            intent.putExtra("googleName", googleSignInAccount.getDisplayName());
+            intent.putExtra("googleEmail", googleSignInAccount.getEmail());
+            intent.putExtra("googleProfPic", googleSignInAccount.getPhotoUrl().toString());
             intent.putExtra(REQUEST_CODE, REQUEST_CODE_VALUE);
             intent.putExtra(JSON_PULL_PUSH, userArrayList);
             startActivityForResult(intent, REQUEST_CODE_VALUE);
+
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
         }
         else{
@@ -197,24 +196,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "run: you are in on failure. Something is very wrong: " + e.getMessage());
-                    }
-                });
+                runOnUiThread(() -> Log.d(TAG, "run: you are in on failure. Something is very wrong: " + e.getMessage()));
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                ResponseBody responseBody = response.body();
-                users = gson.fromJson(responseBody.string(),User[].class);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        newView(users);
-                    }
-                });
+                try (ResponseBody responseBody = response.body()) {
+                    assert responseBody != null;
+                    users = gson.fromJson(responseBody.string(), User[].class);
+                }
+                runOnUiThread(() -> newView(users));
             }
         });
 
@@ -237,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Gson gson = new Gson();
         String json = gson.toJson(userArrayList);
         editor.putString(JSON_PULL_PUSH, json);
-        editor.commit();
+        editor.apply();
 
     }
 

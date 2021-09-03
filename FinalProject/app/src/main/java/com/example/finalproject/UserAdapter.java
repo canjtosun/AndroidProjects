@@ -82,6 +82,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             intent.putExtra("firstAndLastName", firstAndLastName);
             intent.putExtra("email", email);
 
+            Log.d("USER ADAPTER", "ShowAllInformation: " + profPicUrl + firstAndLastName + email);
+
             RecyclerViewActivity.isActivityCalled = true;
             view.getContext().startActivity(intent);
 

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.gson.Gson;
@@ -31,6 +32,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +44,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private static final String TAG = "RecyclerViewActivity";
     protected static final String JSON_SAVE_RETRIEVE = "jsonX";
-    public static final String CHANNEL_1_ID = "channel1";
+    private static final int RECYCLER_VIEW_NOTIFICATION_ID = 1;
+    private static final String RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID = "channel1";
     private static final int RECYCLER_ACTIVITY_VALUE = 90;
     private NotificationManagerCompat notificationManager;
 
@@ -53,18 +57,22 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private Button signOutButton;
     private GoogleSignInClient googleSignInClient;
+    GoogleSignInAccount account;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
+        //userArrayList = new ArrayList<>();
 
         notificationManager = NotificationManagerCompat.from(this);
 
-
-
         recyclerView = findViewById(R.id.recViewUser);
         signOutButton = findViewById(R.id.sign_in_button);
+
+        String googleName = getIntent().getStringExtra("googleName");
+        String googleEmail = getIntent().getStringExtra("googleEmail");
+        String googleProfPic = getIntent().getStringExtra("googleProfPic");
 
         Log.d(TAG, "onCreate: " + getIntent().getExtras().getInt(REQUEST_CODE));
         if(getIntent().getExtras().getInt(REQUEST_CODE) == INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE){
@@ -75,6 +83,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         else if(getIntent().getExtras().getInt(REQUEST_CODE) == RECYCLER_ACTIVITY_VALUE){
             Log.d(TAG, "onCreate: You are Coming from Main Activity page" + userArrayList);
             userArrayList = (ArrayList<User>) getIntent().getSerializableExtra(JSON_PULL_PUSH);
+            userArrayList.add(0, new User(googleName, googleEmail, googleProfPic));
             Log.d(TAG, "onCreate: You just initialized the userArrayList->" + userArrayList);
         }
 
@@ -103,8 +112,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onPause() {
         super.onPause();
         saveData();
-        if(isActivityCalled == false) {
-            sendOnChannel1();
+        if(!isActivityCalled) {
+            recyclerViewNotification();
         }
 
     }
@@ -116,6 +125,13 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Toast.makeText(this, "Please click LOG OUT to go Main Page", Toast.LENGTH_SHORT)
+                .show();
+
+    }
 
     private void signOutAndGoBack() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -136,7 +152,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         Gson gson = new Gson();
         String json = gson.toJson(userArrayList);
         editor.putString(JSON_SAVE_RETRIEVE, json);
-        editor.commit();
+        editor.apply();
 
     }
 
@@ -151,11 +167,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     }
 
 
-    public void sendOnChannel1(){
+    public void recyclerViewNotification(){
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel1 = new NotificationChannel(CHANNEL_1_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
-            channel1.setDescription("this is channel 1");
+            NotificationChannel channel1 = new NotificationChannel(RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
+            channel1.setDescription("This is IndividualUserDetails channel1");
 
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
@@ -163,9 +179,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), 0);
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_1_ID)
+        Notification notification = new NotificationCompat.Builder(this, RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.btn_star)
-                .setContentTitle("Final Project")
+                .setContentTitle("Information Page")
                 .setContentText("Don't Forget About Me!")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
@@ -173,7 +189,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                 .setAutoCancel(true)
                 .build();
 
-        notificationManager.notify(1, notification);
+
+        notificationManager.notify(RECYCLER_VIEW_NOTIFICATION_ID, notification);
     }
 
 
