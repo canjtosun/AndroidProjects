@@ -57,7 +57,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private Button signOutButton;
     private GoogleSignInClient googleSignInClient;
-    GoogleSignInAccount account;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +74,10 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         String googleEmail = getIntent().getStringExtra("googleEmail");
         String googleProfPic = getIntent().getStringExtra("googleProfPic");
 
+        //this is the part not to mix up retrieving data and pulling the information and assigning the arraylist
+        //if statement calls retrieve data from after coming back form editing user information
+        //else part is only calling once, pulling json info with google user info and assign to arraylist
+        //without this part, all the information is mixed up and gives error
         Log.d(TAG, "onCreate: " + getIntent().getExtras().getInt(REQUEST_CODE));
         if(getIntent().getExtras().getInt(REQUEST_CODE) == INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE){
             Log.d(TAG, "onCreate: You are Coming 'back' from Individual User Information page");
@@ -81,12 +85,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         }
 
         else if(getIntent().getExtras().getInt(REQUEST_CODE) == RECYCLER_ACTIVITY_VALUE){
-            Log.d(TAG, "onCreate: You are Coming from Main Activity page" + userArrayList);
+            Log.d(TAG, "onCreate: You are Coming from Main Activity page");
             userArrayList = (ArrayList<User>) getIntent().getSerializableExtra(JSON_PULL_PUSH);
             userArrayList.add(0, new User(googleName, googleEmail, googleProfPic));
-            Log.d(TAG, "onCreate: You just initialized the userArrayList->" + userArrayList);
+            Log.d(TAG, "onCreate: You just initialized the userArrayList");
         }
-
 
         //adapter
         UserAdapter userAdapter = new UserAdapter(this, userArrayList);
@@ -94,9 +97,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(userAdapter);
 
-
+        //click listener for sign out
         findViewById(R.id.sign_out_button).setOnClickListener(this);
-
 
 
     }
@@ -112,6 +114,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onPause() {
         super.onPause();
         saveData();
+        //Notification control between activities
         if(!isActivityCalled) {
             recyclerViewNotification();
         }
@@ -128,11 +131,13 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
+        //back button control
         Toast.makeText(this, "Please click LOG OUT to go Main Page", Toast.LENGTH_SHORT)
                 .show();
 
     }
 
+    //sign out and go back to log in page
     private void signOutAndGoBack() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -140,11 +145,12 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.signOut();
         Intent intent = new Intent(this, MainActivity.class);
-        isActivityCalled = true;
+        isActivityCalled = true; //Notification control between activities
         startActivity(intent);
 
     }
 
+    //saving data with SharedPreferences to json
     public void saveData(){
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -153,9 +159,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         String json = gson.toJson(userArrayList);
         editor.putString(JSON_SAVE_RETRIEVE, json);
         editor.apply();
-
     }
 
+    //retrieving data from json
     public void retrieveData(){
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String json = sharedPrefs.getString(JSON_SAVE_RETRIEVE, "");
@@ -166,9 +172,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     }
 
-
+    //sending notification uniquely for each activity
     public void recyclerViewNotification(){
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel1 = new NotificationChannel(RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
             channel1.setDescription("This is IndividualUserDetails channel1");
@@ -192,7 +197,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         notificationManager.notify(RECYCLER_VIEW_NOTIFICATION_ID, notification);
     }
-
 
     @Override
     public void onClick(View view) {

@@ -1,8 +1,8 @@
 package com.example.finalproject;
 
-import android.net.Uri;
-
 import java.io.Serializable;
+
+//User class with constructor and with getters / setters
 
 public class User implements Serializable {
 

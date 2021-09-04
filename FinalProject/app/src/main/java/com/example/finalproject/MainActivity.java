@@ -34,6 +34,8 @@ import java.lang.reflect.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -103,13 +105,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
+        //google sign in
         GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if(googleSignInAccount != null)
             retrieveData();
 
+        //update the ui
         updateUI(googleSignInAccount);
         Log.d(TAG, "onStart: ");
     }
+
 
     @Override
     protected void onResume() {
@@ -132,11 +137,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
-        Toast.makeText(this, "There is no back, you are in log in page", Toast.LENGTH_SHORT)
+        //back button control
+        Toast.makeText(this, "You are in LogIn Page", Toast.LENGTH_SHORT)
                 .show();
-
     }
 
+    //handle sign in result, if user cannot sign in, log a failed code and update UI
     public void handleSignInResult(Task<GoogleSignInAccount> task){
         try{
             GoogleSignInAccount googleSignInAccount = task.getResult(ApiException.class);
@@ -148,13 +154,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if(requestCode == SIGN_IN_ID){
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
@@ -166,15 +169,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(signInIntent, SIGN_IN_ID);
     }
 
+    //updating UI according to the google sign in account
     public void updateUI(@Nullable GoogleSignInAccount googleSignInAccount){
 
+        //if already signed in
+        //get logged in user information and save it in memory
+        //save json information to memory
+        //make sign in button non-visible
         if(googleSignInAccount != null){
 
             Intent intent = new Intent(this, RecyclerViewActivity.class);
 
             intent.putExtra("googleName", googleSignInAccount.getDisplayName());
             intent.putExtra("googleEmail", googleSignInAccount.getEmail());
-            intent.putExtra("googleProfPic", googleSignInAccount.getPhotoUrl().toString());
+            intent.putExtra("googleProfPic", googleSignInAccount.getPhotoUrl() != null ? googleSignInAccount.getPhotoUrl().toString() : null);
             intent.putExtra(REQUEST_CODE, REQUEST_CODE_VALUE);
             intent.putExtra(JSON_PULL_PUSH, userArrayList);
             startActivityForResult(intent, REQUEST_CODE_VALUE);
@@ -186,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //pulling info from json
+    //get info, put in User[] array
+    //and then call newView method
     public void pullTheInformation(String infoUrl) throws IOException{
 
         Request request = new Request.Builder()
@@ -194,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         client.newCall(request).enqueue(new Callback() {
+            //if response from call fails, throw a message with log
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() -> Log.d(TAG, "run: you are in on failure. Something is very wrong: " + e.getMessage()));
@@ -211,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    //get info from User[] array and save it in a dynamic array
     public void newView(User[] users){
         int i = 0;
         for(User u: users){
@@ -220,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
+    //save data to json style
     public void saveData(){
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -232,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    //retrieve data from json
     public void retrieveData(){
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String json = sharedPrefs.getString(JSON_PULL_PUSH, "");
@@ -241,8 +255,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         userArrayList = gson.fromJson(json, type);
 
     }
-
-
 
     @Override
     public void onClick(View view) {

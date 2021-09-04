@@ -3,16 +3,13 @@ package com.example.finalproject;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,18 +17,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     Context context;
     private ArrayList<User> userArrayList;
 
+    //constructor
     public UserAdapter(Context context, ArrayList<User> userArrayList) {
         this.context = context;
         this.userArrayList = userArrayList;
     }
 
+    //cache references to sub views of the View
     @NonNull
     @Override
     public UserAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -40,6 +39,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+    // This method should update the contents of the RecyclerView.ViewHolder.itemView to reflect the item at the given position.
     @SuppressLint("ResourceType")
     @Override
     public void onBindViewHolder(@NonNull UserAdapter.ViewHolder holder, int position) {
@@ -50,7 +50,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         holder.generalEmail.setText(user.getEmail());
     }
 
-
+    //Returns the total number of items in the data set held by the adapter.
     @Override
     public int getItemCount() {
         return userArrayList.size();
@@ -61,6 +61,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         final private TextView generalFirstName, generalEmail;
         Intent intent;
 
+        //get items
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             generalProfilePic = itemView.findViewById(R.id.general_profile_pic);
@@ -71,6 +72,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         }
 
+        //show all information
+        //assign to the values and put in a sotorage to send it to next activity
         public void ShowAllInformation(View view){
             intent = new Intent(view.getContext(), IndividualUserDetails.class);
 
@@ -82,8 +85,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             intent.putExtra("firstAndLastName", firstAndLastName);
             intent.putExtra("email", email);
 
-            Log.d("USER ADAPTER", "ShowAllInformation: " + profPicUrl + firstAndLastName + email);
-
+            //notification control
             RecyclerViewActivity.isActivityCalled = true;
             view.getContext().startActivity(intent);
 
@@ -92,9 +94,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         @Override
         public void onClick(View view) {
             ShowAllInformation(view);
-
         }
-
-
     }
 }
