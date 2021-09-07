@@ -18,23 +18,23 @@
 
         <ImageView
             android:id="@+id/general_profile_pic"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="112dp"
+            android:layout_height="98dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
-            android:contentDescription="Profile Pic"
+            android:contentDescription="@string/profile_pic"
             android:padding="5dp" />
 
         <TextView
             android:id="@+id/general_name"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:layout_toEndOf="@id/general_profile_pic"
-            android:text="First Name"
+            android:text="@string/first_name"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -42,15 +42,15 @@
 
         <TextView
             android:id="@+id/general_email"
-            android:layout_width="wrap_content"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="50dp"
             android:layout_toEndOf="@id/general_profile_pic"
-            android:text="Email"
+            android:text="@string/email"
             android:textColor="@color/black"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="italic" />
 
     </RelativeLayout>
 

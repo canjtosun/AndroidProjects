@@ -1,11 +1,7 @@
 package com.example.finalproject;
 
-import static com.example.finalproject.IndividualUserDetails.INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE;
-import static com.example.finalproject.MainActivity.JSON_PULL_PUSH;
-import static com.example.finalproject.MainActivity.REQUEST_CODE;
-import static com.example.finalproject.MainActivity.REQUEST_CODE_VALUE;
 
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -20,6 +16,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -34,72 +31,98 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 
-public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener {
+public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener, Serializable {
 
     private static final String TAG = "RecyclerViewActivity";
     protected static final String JSON_SAVE_RETRIEVE = "jsonX";
     private static final int RECYCLER_VIEW_NOTIFICATION_ID = 1;
     private static final String RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID = "channel1";
-    private static final int RECYCLER_ACTIVITY_VALUE = 90;
+
     private NotificationManagerCompat notificationManager;
 
-    private RecyclerView recyclerView;
+    private static final String INFOURL = "https://jsonplaceholder.typicode.com/users";
+    private static final String PICSURL = "https://robohash.org/";
 
-    private ArrayList<User> userArrayList;
+    private RecyclerView recyclerView;
+    private UserAdapter userAdapter;
+
+    private static ArrayList<User> userArrayList;
     public static boolean isActivityCalled = false;
+    public static boolean isAlreadyCalled = false;
+
+    private OkHttpClient client;
+    private Gson gson;
+    User[] users;
+
 
 
     private Button signOutButton;
     private GoogleSignInClient googleSignInClient;
+    private GoogleSignInAccount googleSignInAccount;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
-        //userArrayList = new ArrayList<>();
+        Log.d(TAG, "onCreate: ");
+
 
         notificationManager = NotificationManagerCompat.from(this);
 
         recyclerView = findViewById(R.id.recViewUser);
         signOutButton = findViewById(R.id.sign_in_button);
 
-        String googleName = getIntent().getStringExtra("googleName");
-        String googleEmail = getIntent().getStringExtra("googleEmail");
-        String googleProfPic = getIntent().getStringExtra("googleProfPic");
+        userArrayList = new ArrayList<>();
+        gson = new Gson();
+        client = new OkHttpClient();
 
-        //this is the part not to mix up retrieving data and pulling the information and assigning the arraylist
-        //if statement calls retrieve data from after coming back form editing user information
-        //else part is only calling once, pulling json info with google user info and assign to arraylist
-        //without this part, all the information is mixed up and gives error
-        Log.d(TAG, "onCreate: " + getIntent().getExtras().getInt(REQUEST_CODE));
-        if(getIntent().getExtras().getInt(REQUEST_CODE) == INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE){
-            Log.d(TAG, "onCreate: You are Coming 'back' from Individual User Information page");
+        //pulling the google information but not adding
+        //this info sometimes not pulling correctly, so it cause error
+
+        googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
+        String googleName = googleSignInAccount.getDisplayName();
+        String googleEmail = googleSignInAccount.getEmail();
+        String googleProfPic = String.valueOf(googleSignInAccount.getPhotoUrl());
+        User googleUser = new User(googleName, googleEmail, googleProfPic);
+
+
+        Log.d(TAG, "onCreate: is Activity called" + isAlreadyCalled);
+        if(!isAlreadyCalled) {
+            try {
+                run();
+                userArrayList.add(googleUser);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            isAlreadyCalled = true;
+        }
+        else{
             retrieveData();
         }
 
-        else if(getIntent().getExtras().getInt(REQUEST_CODE) == RECYCLER_ACTIVITY_VALUE){
-            Log.d(TAG, "onCreate: You are Coming from Main Activity page");
-            userArrayList = (ArrayList<User>) getIntent().getSerializableExtra(JSON_PULL_PUSH);
-            userArrayList.add(0, new User(googleName, googleEmail, googleProfPic));
-            Log.d(TAG, "onCreate: You just initialized the userArrayList");
-        }
-
-        //adapter
-        UserAdapter userAdapter = new UserAdapter(this, userArrayList);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        userAdapter = new UserAdapter(this, userArrayList);
         recyclerView.setAdapter(userAdapter);
 
         //click listener for sign out
         findViewById(R.id.sign_out_button).setOnClickListener(this);
-
 
     }
 
@@ -107,6 +130,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onResume() {
         super.onResume();
         isActivityCalled = false;
+        Log.d(TAG, "onResume: ");
     }
 
 
@@ -118,6 +142,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         if(!isActivityCalled) {
             recyclerViewNotification();
         }
+        Log.d(TAG, "onPause: ");
 
     }
 
@@ -145,7 +170,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.signOut();
         Intent intent = new Intent(this, MainActivity.class);
-        isActivityCalled = true; //Notification control between activities
+        isActivityCalled = true;
+        isAlreadyCalled = false; // avoid retrieve memory data. if you log out, data will reset
         startActivity(intent);
 
     }
@@ -197,6 +223,48 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         notificationManager.notify(RECYCLER_VIEW_NOTIFICATION_ID, notification);
     }
+
+    //pulling info from json
+    //get info, put in User[] array
+    //and then call newView method
+    public void run() {
+        Request request = new Request.Builder()
+                .url(INFOURL)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override public void onResponse(Call call, Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+                    Headers responseHeaders = response.headers();
+                    for (int i = 0, size = responseHeaders.size(); i < size; i++) {
+                        System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
+                    }
+
+                    users = gson.fromJson(response.body().string(), User[].class);
+                    runOnUiThread( ()-> newView(users));
+                }
+            }
+        });
+    }
+
+    //get info from User[] array and save it in a dynamic array
+    @SuppressLint("NotifyDataSetChanged")
+    public void newView(User[] users){
+        int i= 0;
+        for(User u: users){
+            u.setProfilePic(PICSURL + i);
+            userArrayList.add(u);
+            i++;
+        }
+        userAdapter.notifyDataSetChanged();
+    }
+
 
     @Override
     public void onClick(View view) {

@@ -5,5 +5,8 @@
     <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
          from https://console.developers.google.com/ -->
     <string name="server_client_id">810339593040-5c611vbg114o6t19tf4pdvg0uns4rgjj.apps.googleusercontent.com</string>
+    <string name="profile_pic">Profile Pic</string>
+    <string name="first_name">First Name</string>
+    <string name="email">Email</string>
 
 </resources>

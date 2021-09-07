@@ -1,6 +1,6 @@
 package com.example.finalproject;
 
-import static com.example.finalproject.MainActivity.REQUEST_CODE;
+
 import static com.example.finalproject.RecyclerViewActivity.JSON_SAVE_RETRIEVE;
 
 import androidx.annotation.NonNull;
@@ -19,24 +19,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
-
-import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +39,6 @@ import java.util.List;
 public class IndividualUserDetails extends Activity implements View.OnClickListener {
 
     private static final String TAG = "IndividualUserDetails";
-    protected static final int INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE = 70;
     private static final int INDIVIDUAL_USER_NOTIFICATION_ID = 0;
     private static final String INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID = "channel0";
     private ImageView profPic;
@@ -55,7 +48,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     private ArrayList<User> userArrayList;
     String profPicValue, firstAndLastNameValue, emailValue;
     NotificationManagerCompat notificationManager;
-
 
     private static final int CAMERA_REQUEST = 1888;
     private static final int MY_CAMERA_PERMISSION_CODE = 1000;
@@ -71,21 +63,28 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
         Log.d(TAG, "onCreate: ");
 
-        //getting IDs
-        profPic = findViewById(R.id.profile_pic_view);
-        firstAndLastName = findViewById(R.id.first_last_name);
-        email = findViewById(R.id.email);
-        goBackButton = findViewById(R.id.go_back_button);
+        if(savedInstanceState != null){
+            Picasso.get().load(savedInstanceState.getString("picKey"));
+            firstAndLastName.setText(savedInstanceState.getString("nameAndLastNameKey"));
+            email.setText(savedInstanceState.getString("emailKey"));
 
-        //get the values from last intent
-        profPicValue = getIntent().getStringExtra("profilePic");
-        firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
-        emailValue = getIntent().getStringExtra("email");
+        }
+        else{
+            profPic = findViewById(R.id.profile_pic_view);
+            firstAndLastName = findViewById(R.id.first_last_name);
+            email = findViewById(R.id.email);
+            goBackButton = findViewById(R.id.go_back_button);
 
-        //assign values
-        Picasso.get().load(profPicValue).into(profPic);
-        firstAndLastName.setText(firstAndLastNameValue);
-        email.setText(emailValue);
+            //get the values from last intent
+            profPicValue = getIntent().getStringExtra("profilePic");
+            firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
+            emailValue = getIntent().getStringExtra("email");
+
+            //assign values
+            Picasso.get().load(profPicValue).into(profPic);
+            firstAndLastName.setText(firstAndLastNameValue);
+            email.setText(emailValue);
+        }
 
         //click listeners
         goBackButton.setOnClickListener(this);
@@ -134,9 +133,8 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     //where user comes from and retrieve data other than pull from json
     public void goBackToRecyclerView() {
         intent = new Intent(this, RecyclerViewActivity.class);
-        intent.putExtra(REQUEST_CODE, INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE);
         RecyclerViewActivity.isActivityCalled = true;
-        startActivityForResult(intent, INDIVIDUAL_USER_DETAIL_ACTIVITY_VALUE);
+        startActivity(intent);
     }
 
     //saving data.
@@ -157,7 +155,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
             if (x.getName().equals(firstAndLastNameValue)) {
                 x.setName(firstAndLastName.getText().toString());
                 x.setEmail(email.getText().toString());
-                //x.setProfilePic(profPic); // find out the switch taken photo to assign here
             }
         }
         //save it back
@@ -167,6 +164,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void openCamera(){
+        RecyclerViewActivity.isActivityCalled = true;
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
         {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
@@ -175,13 +173,14 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
         {
             Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             startActivityForResult(cameraIntent, CAMERA_REQUEST);
-            RecyclerViewActivity.isActivityCalled = true;
+
         }
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        RecyclerViewActivity.isActivityCalled = true;
         if (requestCode == MY_CAMERA_PERMISSION_CODE)
         {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
@@ -189,7 +188,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
                 Toast.makeText(this, "Camera Permission Granted", Toast.LENGTH_LONG).show();
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                RecyclerViewActivity.isActivityCalled = true;
+
             }
             else
             {
@@ -206,7 +205,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
             Bitmap photo = (Bitmap) data.getExtras().get("data");
             profPic.setImageBitmap(photo);
             //save the data and send it to arraylist
-
         }
     }
 
@@ -250,11 +248,10 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        firstAndLastNameValue = savedInstanceState.getString("nameAndLastNameKey");
-        emailValue = savedInstanceState.getString("emailKey");
-        profPicValue = savedInstanceState.getString("picKey");
+        Log.d(TAG, "onRestoreInstanceState: " + firstAndLastName.getText() + "->" + email.getText());
         firstAndLastName.setText(firstAndLastNameValue);
         email.setText(emailValue);
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -268,6 +265,5 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
                 openCamera();
                 break;
         }
-
     }
 }
