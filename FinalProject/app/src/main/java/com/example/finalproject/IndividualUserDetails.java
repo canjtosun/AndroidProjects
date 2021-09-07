@@ -6,10 +6,14 @@ import static com.example.finalproject.RecyclerViewActivity.JSON_SAVE_RETRIEVE;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -19,9 +23,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,9 +39,15 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 public class IndividualUserDetails extends Activity implements View.OnClickListener {
@@ -49,8 +63,11 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     String profPicValue, firstAndLastNameValue, emailValue;
     NotificationManagerCompat notificationManager;
 
-    private static final int CAMERA_REQUEST = 1888;
-    private static final int MY_CAMERA_PERMISSION_CODE = 1000;
+    static final int CAPTURE_IMAGE_REQUEST = 1000;
+
+    String mCurrentPhotoPath;
+    File photoFile = null;
+    Uri photoUri = null;
 
 
 
@@ -162,50 +179,107 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
     }
 
+    //create unique empty image file
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+
+    /*
+    Pull saved files
+    Open Camera
+    create file and initialize the file
+    get Uri to the specific path
+    capture image
+    assign to person profile pic
+    save back to shared preferences
+     */
+    @SuppressLint("QueryPermissionsNeeded")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void openCamera(){
         RecyclerViewActivity.isActivityCalled = true;
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
-        {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_PERMISSION_CODE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString(JSON_SAVE_RETRIEVE, "");
+        Type type = new TypeToken<List<User>>() {}.getType();
+        userArrayList = gson.fromJson(json, type);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
         }
-        else
-        {
-            Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+        else {
+            Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            try {
+
+                photoFile = createImageFile();
+
+                Log.i("Path-> ", photoFile.getAbsolutePath());
+
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    photoUri = FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
+                            BuildConfig.APPLICATION_ID + ".provider", photoFile);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST);
+                }
+            } catch (Exception ex) {
+                // Error occurred while creating the File
+                ex.printStackTrace();
+            }
+
+
+            for (User x : userArrayList) {
+                if (x.getName().equals(firstAndLastNameValue)) {
+                    x.setProfilePic("file://"+photoFile.getAbsolutePath());
+                }
+
+            }
+
+            sharedPreferences.edit().putString(JSON_SAVE_RETRIEVE, gson.toJson(userArrayList)).apply();
 
         }
     }
+
+    //camera and external data permission result
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         RecyclerViewActivity.isActivityCalled = true;
-        if (requestCode == MY_CAMERA_PERMISSION_CODE)
-        {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(this, "Camera Permission Granted", Toast.LENGTH_LONG).show();
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
-
-            }
-            else
-            {
-                Toast.makeText(this, "Camera Permission Denied", Toast.LENGTH_LONG).show();
+        if (requestCode == 0) {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                openCamera();
             }
         }
+    }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK)
-        {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            profPic.setImageBitmap(photo);
-            //save the data and send it to arraylist
+        if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            Bitmap myBitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+            profPic.setImageBitmap(myBitmap);
         }
+        else
+        {
+            Log.d(TAG, "onActivityResult: Request cancelled or something went wrong.");
+        }
+
     }
 
     //sending notification uniquely for each activity
