@@ -36,6 +36,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
@@ -70,7 +71,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     Uri photoUri = null;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,13 +80,12 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
         Log.d(TAG, "onCreate: ");
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             Picasso.get().load(savedInstanceState.getString("picKey"));
             firstAndLastName.setText(savedInstanceState.getString("nameAndLastNameKey"));
             email.setText(savedInstanceState.getString("emailKey"));
 
-        }
-        else{
+        } else {
             profPic = findViewById(R.id.profile_pic_view);
             firstAndLastName = findViewById(R.id.first_last_name);
             email = findViewById(R.id.email);
@@ -123,7 +122,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
         //saving it when user leaves the app
         saveIt();
         //calling notification if user doesn't moving between activities
-        if(!RecyclerViewActivity.isActivityCalled) {
+        if (!RecyclerViewActivity.isActivityCalled) {
             individualUserNotification();
         }
         Log.d(TAG, "onPause: ");
@@ -157,21 +156,23 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     //saving data.
     // if data changes by user, finding the right data, changing it
     //and pushing back to json style in memory with SharedPreferences
-    public void saveIt(){
+    public void saveIt() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         Gson gson = new Gson();
 
         //pull all info
         String json = sharedPreferences.getString(JSON_SAVE_RETRIEVE, "");
-        Type type = new TypeToken<List<User>>() {}.getType();
+        Type type = new TypeToken<List<User>>() {
+        }.getType();
         userArrayList = gson.fromJson(json, type);
 
         //find the user that u just clicked and changed the values
-        for(User x: userArrayList) {
+        for (User x : userArrayList) {
             if (x.getName().equals(firstAndLastNameValue)) {
                 x.setName(firstAndLastName.getText().toString());
                 x.setEmail(email.getText().toString());
+                x.setProfilePic(profPicValue);
             }
         }
         //save it back
@@ -208,25 +209,16 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
      */
     @SuppressLint("QueryPermissionsNeeded")
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void openCamera(){
+    public void openCamera() {
         RecyclerViewActivity.isActivityCalled = true;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString(JSON_SAVE_RETRIEVE, "");
-        Type type = new TypeToken<List<User>>() {}.getType();
-        userArrayList = gson.fromJson(json, type);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
-        }
-        else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        } else {
             Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             try {
 
                 photoFile = createImageFile();
-
-                Log.i("Path-> ", photoFile.getAbsolutePath());
-
                 // Continue only if the File was successfully created
                 if (photoFile != null) {
                     photoUri = FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
@@ -238,52 +230,43 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
                 // Error occurred while creating the File
                 ex.printStackTrace();
             }
-
-
-            for (User x : userArrayList) {
-                if (x.getName().equals(firstAndLastNameValue)) {
-                    x.setProfilePic("file://"+photoFile.getAbsolutePath());
-                }
-
-            }
-
-            sharedPreferences.edit().putString(JSON_SAVE_RETRIEVE, gson.toJson(userArrayList)).apply();
-
         }
     }
 
     //camera and external data permission result
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         RecyclerViewActivity.isActivityCalled = true;
         if (requestCode == 0) {
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                openCamera();
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    openCamera();
+                }
             }
         }
     }
-    }
+
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == RESULT_OK) {
             Bitmap myBitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
             profPic.setImageBitmap(myBitmap);
+            for (User x : userArrayList) {
+                if (x.getName().equals(firstAndLastNameValue)) {
+                    profPicValue = "file://" + photoFile.getAbsolutePath();
+                }
+            }
+        } else {
+            Log.d(TAG, "onActivityResult: Request cancelled or something went wrong. Saving back original picture");
         }
-        else
-        {
-            Log.d(TAG, "onActivityResult: Request cancelled or something went wrong.");
-        }
-
+        saveIt();
     }
 
     //sending notification uniquely for each activity
-    public void individualUserNotification(){
+    public void individualUserNotification() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel0 = new NotificationChannel(INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID, "channel0", NotificationManager.IMPORTANCE_HIGH);
@@ -293,7 +276,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
             manager.createNotificationChannel(channel0);
         }
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent() , 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), 0);
 
         Notification notification = new NotificationCompat.Builder(this, INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.btn_star)
@@ -312,26 +295,27 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("nameAndLastNameKey", firstAndLastName.getText().toString() );
+        outState.putString("nameAndLastNameKey", firstAndLastName.getText().toString());
         outState.putString("emailKey", email.getText().toString());
-        outState.putString("picKey", profPic.getTransitionName());
-        Log.d(TAG, "onSaveInstanceState: " + firstAndLastName.getText() + "->" + email.getText());
+        outState.putString("picKey", profPicValue);
+        Log.d(TAG, "onSaveInstanceState: " + firstAndLastName.getText() + "->" + email.getText() + "->" + profPicValue);
     }
 
     //bring back the recent information saved by onSaveInstanceState
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.d(TAG, "onRestoreInstanceState: " + firstAndLastName.getText() + "->" + email.getText());
-        firstAndLastName.setText(firstAndLastNameValue);
-        email.setText(emailValue);
+        Log.d(TAG, "onRestoreInstanceState: " + firstAndLastName.getText() + "->" + email.getText() + "->" + profPicValue);
+        firstAndLastNameValue = savedInstanceState.getString("nameAndLastNameKey");
+        emailValue = savedInstanceState.getString("emailKey");
+        profPicValue = savedInstanceState.getString("profPic");
 
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.go_back_button:
                 goBackToRecyclerView();
                 break;

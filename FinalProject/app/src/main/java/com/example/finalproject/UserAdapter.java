@@ -34,7 +34,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     @Override
     public UserAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.card_layout, parent,false);
+                .inflate(R.layout.card_layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -56,7 +56,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         return userArrayList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final private ImageView generalProfilePic;
         final private TextView generalFirstName, generalEmail;
         Intent intent;
@@ -74,7 +74,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         //show all information
         //assign to the values and put in a storage to send it to next activity
-        public void ShowAllInformation(View view){
+        public void ShowAllInformation(View view) {
 
             intent = new Intent(view.getContext(), IndividualUserDetails.class);
 

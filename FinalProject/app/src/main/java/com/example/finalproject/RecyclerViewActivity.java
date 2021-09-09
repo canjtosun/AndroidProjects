@@ -70,7 +70,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     User[] users;
 
 
-
     private Button signOutButton;
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInAccount googleSignInAccount;
@@ -103,7 +102,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
 
         Log.d(TAG, "onCreate: is Activity called" + isAlreadyCalled);
-        if(!isAlreadyCalled) {
+        if (!isAlreadyCalled) {
             try {
                 run();
                 userArrayList.add(googleUser);
@@ -111,9 +110,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                 e.printStackTrace();
             }
             isAlreadyCalled = true;
-        }
-        else{
+        } else {
             retrieveData();
+            Log.d(TAG, "onCreate: DATA RETRIEVED BCUZ YOU ARE COMING FROM OTHER ACTIVITY");
         }
 
         recyclerView.setHasFixedSize(true);
@@ -139,7 +138,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         super.onPause();
         saveData();
         //Notification control between activities
-        if(!isActivityCalled) {
+        if (!isActivityCalled) {
             recyclerViewNotification();
         }
         Log.d(TAG, "onPause: ");
@@ -177,7 +176,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     }
 
     //saving data with SharedPreferences to json
-    public void saveData(){
+    public void saveData() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPrefs.edit();
 
@@ -188,18 +187,19 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     }
 
     //retrieving data from json
-    public void retrieveData(){
+    public void retrieveData() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String json = sharedPrefs.getString(JSON_SAVE_RETRIEVE, "");
 
         Gson gson = new Gson();
-        Type type = new TypeToken<List<User>>() {}.getType();
+        Type type = new TypeToken<List<User>>() {
+        }.getType();
         userArrayList = gson.fromJson(json, type);
 
     }
 
     //sending notification uniquely for each activity
-    public void recyclerViewNotification(){
+    public void recyclerViewNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel1 = new NotificationChannel(RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
             channel1.setDescription("This is IndividualUserDetails channel1");
@@ -233,13 +233,16 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
 
-            @Override public void onResponse(Call call, Response response) throws IOException {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
-                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                    if (!response.isSuccessful())
+                        throw new IOException("Unexpected code " + response);
 
                     Headers responseHeaders = response.headers();
                     for (int i = 0, size = responseHeaders.size(); i < size; i++) {
@@ -247,7 +250,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                     }
 
                     users = gson.fromJson(response.body().string(), User[].class);
-                    runOnUiThread( ()-> newView(users));
+                    runOnUiThread(() -> newView(users));
                 }
             }
         });
@@ -255,9 +258,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     //get info from User[] array and save it in a dynamic array
     @SuppressLint("NotifyDataSetChanged")
-    public void newView(User[] users){
-        int i= 0;
-        for(User u: users){
+    public void newView(User[] users) {
+        int i = 0;
+        for (User u : users) {
             u.setProfilePic(PICSURL + i);
             userArrayList.add(u);
             i++;
@@ -268,7 +271,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.sign_out_button:
                 signOutAndGoBack();
                 break;

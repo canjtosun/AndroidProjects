@@ -21,15 +21,14 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
 import com.squareup.picasso.Picasso;
+
 import java.io.Serializable;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, Serializable {
 
     private static final String TAG = "MainActivity";
-    private static final String GOOGLE_LOGO_URI = "https://storage.googleapis.com/gd-wagtail-prod-assets/original_images/evolving_google_identity_2x1.jpg";
+    private static final String GOOGLE_LOGO_URI = "https://i.ibb.co/fkHtYJw/580b57fcd9996e24bc43c51f.png";
     private static final int SIGN_IN_ID = 9001;
-
-
 
 
     private ImageView googleLogoImageView;
@@ -102,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //handle sign in result, if user cannot sign in, log a failed code and update UI
-    public void handleSignInResult(Task<GoogleSignInAccount> task){
-        try{
+    public void handleSignInResult(Task<GoogleSignInAccount> task) {
+        try {
             GoogleSignInAccount googleSignInAccount = task.getResult(ApiException.class);
             updateUI(googleSignInAccount);
 
@@ -117,28 +116,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if(requestCode == SIGN_IN_ID){
+        if (requestCode == SIGN_IN_ID) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
     }
 
-    public void signIn(){
+    public void signIn() {
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, SIGN_IN_ID);
     }
 
     //updating UI according to the google sign in account
-    public void updateUI(@Nullable GoogleSignInAccount googleSignInAccount){
+    public void updateUI(@Nullable GoogleSignInAccount googleSignInAccount) {
 
-        if(googleSignInAccount != null){
+        if (googleSignInAccount != null) {
 
             Intent intent = new Intent(this, RecyclerViewActivity.class);
             startActivity(intent);
 
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-        }
-        else{
+        } else {
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         }
     }
@@ -146,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.sign_in_button:
                 signIn();
                 break;
