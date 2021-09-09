@@ -253,6 +253,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == RESULT_OK) {
             Bitmap myBitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+            myBitmap = Bitmap.createScaledBitmap(myBitmap,400,400,false);
             profPic.setImageBitmap(myBitmap);
             for (User x : userArrayList) {
                 if (x.getName().equals(firstAndLastNameValue)) {
