@@ -17,6 +17,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import jp.wasabeef.picasso.transformations.CropCircleTransformation;
+
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
@@ -46,7 +48,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         holder.generalFirstName.setText(user.getName());
         holder.generalProfilePic.setTransitionName(user.getProfilePic());
-        Picasso.get().load(user.getProfilePic()).into(holder.generalProfilePic);
+        Picasso.get().load(user.getProfilePic()).transform(new CropCircleTransformation()).into(holder.generalProfilePic);
         holder.generalEmail.setText(user.getEmail());
     }
 

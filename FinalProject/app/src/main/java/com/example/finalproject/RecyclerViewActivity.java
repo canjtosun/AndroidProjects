@@ -208,7 +208,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
             manager.createNotificationChannel(channel1);
         }
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), 0);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.btn_star)

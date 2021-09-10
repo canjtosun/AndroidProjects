@@ -2,10 +2,13 @@ package com.example.finalproject;
 
 
 import static com.example.finalproject.RecyclerViewActivity.JSON_SAVE_RETRIEVE;
+import static com.example.finalproject.RecyclerViewActivity.isActivityCalled;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -19,6 +22,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -50,8 +54,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 
-public class IndividualUserDetails extends Activity implements View.OnClickListener {
+
+public class IndividualUserDetails extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "IndividualUserDetails";
     private static final int INDIVIDUAL_USER_NOTIFICATION_ID = 0;
@@ -80,27 +86,20 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
         Log.d(TAG, "onCreate: ");
 
-        if (savedInstanceState != null) {
-            Picasso.get().load(savedInstanceState.getString("picKey"));
-            firstAndLastName.setText(savedInstanceState.getString("nameAndLastNameKey"));
-            email.setText(savedInstanceState.getString("emailKey"));
+        profPic = findViewById(R.id.profile_pic_view);
+        firstAndLastName = findViewById(R.id.first_last_name);
+        email = findViewById(R.id.email);
+        goBackButton = findViewById(R.id.go_back_button);
 
-        } else {
-            profPic = findViewById(R.id.profile_pic_view);
-            firstAndLastName = findViewById(R.id.first_last_name);
-            email = findViewById(R.id.email);
-            goBackButton = findViewById(R.id.go_back_button);
+        //get the values from last intent
+        profPicValue = getIntent().getStringExtra("profilePic");
+        firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
+        emailValue = getIntent().getStringExtra("email");
 
-            //get the values from last intent
-            profPicValue = getIntent().getStringExtra("profilePic");
-            firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
-            emailValue = getIntent().getStringExtra("email");
-
-            //assign values
-            Picasso.get().load(profPicValue).into(profPic);
-            firstAndLastName.setText(firstAndLastNameValue);
-            email.setText(emailValue);
-        }
+        //assign values
+        Picasso.get().load(profPicValue).transform(new CropCircleTransformation()).resize(400,400).into(profPic);
+        firstAndLastName.setText(firstAndLastNameValue);
+        email.setText(emailValue);
 
         //click listeners
         goBackButton.setOnClickListener(this);
@@ -113,7 +112,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
         super.onResume();
         //Notification control between activities
         RecyclerViewActivity.isActivityCalled = false;
-        Log.d(TAG, "onResume: ");
     }
 
     @Override
@@ -125,7 +123,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
         if (!RecyclerViewActivity.isActivityCalled) {
             individualUserNotification();
         }
-        Log.d(TAG, "onPause: ");
+        Log.d(TAG, "onPause: Is Activity Called:" + isActivityCalled);
     }
 
     @Override
@@ -158,7 +156,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     //and pushing back to json style in memory with SharedPreferences
     public void saveIt() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         Gson gson = new Gson();
 
         //pull all info
@@ -177,7 +174,6 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
         }
         //save it back
         sharedPreferences.edit().putString(JSON_SAVE_RETRIEVE, gson.toJson(userArrayList)).apply();
-
     }
 
     //create unique empty image file
@@ -210,38 +206,36 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     @SuppressLint("QueryPermissionsNeeded")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void openCamera() {
-        RecyclerViewActivity.isActivityCalled = true;
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            RecyclerViewActivity.isActivityCalled = true;
         } else {
             Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             try {
-
                 photoFile = createImageFile();
                 // Continue only if the File was successfully created
-                if (photoFile != null) {
-                    photoUri = FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
-                            BuildConfig.APPLICATION_ID + ".provider", photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                    startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST);
-                }
+                photoUri = FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
+                        BuildConfig.APPLICATION_ID + ".provider", photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                RecyclerViewActivity.isActivityCalled = true;
+                startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST);
             } catch (Exception ex) {
                 // Error occurred while creating the File
                 ex.printStackTrace();
             }
         }
+        RecyclerViewActivity.isActivityCalled = true;
     }
 
     //camera and external data permission result
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        RecyclerViewActivity.isActivityCalled = true;
         if (requestCode == 0) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                     openCamera();
                 }
             }
@@ -251,9 +245,10 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == RESULT_OK) {
             Bitmap myBitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-            myBitmap = Bitmap.createScaledBitmap(myBitmap,400,400,false);
+            myBitmap = Bitmap.createScaledBitmap(myBitmap, 400, 400, false);
             profPic.setImageBitmap(myBitmap);
             for (User x : userArrayList) {
                 if (x.getName().equals(firstAndLastNameValue)) {
@@ -277,7 +272,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
             manager.createNotificationChannel(channel0);
         }
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.btn_star)
@@ -296,9 +291,9 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("nameAndLastNameKey", firstAndLastName.getText().toString());
-        outState.putString("emailKey", email.getText().toString());
-        outState.putString("picKey", profPicValue);
+        outState.putString("firstAndLastName", firstAndLastName.getText().toString());
+        outState.putString("email", email.getText().toString());
+        outState.putString("profilePic", profPicValue);
         Log.d(TAG, "onSaveInstanceState: " + firstAndLastName.getText() + "->" + email.getText() + "->" + profPicValue);
     }
 
@@ -306,11 +301,34 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.d(TAG, "onRestoreInstanceState: " + firstAndLastName.getText() + "->" + email.getText() + "->" + profPicValue);
-        firstAndLastNameValue = savedInstanceState.getString("nameAndLastNameKey");
-        emailValue = savedInstanceState.getString("emailKey");
-        profPicValue = savedInstanceState.getString("profPic");
+        firstAndLastNameValue = savedInstanceState.getString("firstAndLastName");
+        emailValue = savedInstanceState.getString("email");
+        profPicValue = savedInstanceState.getString("profilePic");
 
+    }
+
+    public void openDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Do you want to change profile picture?");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            public void onClick(DialogInterface dialog, int which) {
+                openCamera();
+            }
+        });
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -321,7 +339,7 @@ public class IndividualUserDetails extends Activity implements View.OnClickListe
                 goBackToRecyclerView();
                 break;
             case R.id.profile_pic_view:
-                openCamera();
+                openDialog();
                 break;
         }
     }
