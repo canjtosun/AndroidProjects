@@ -50,8 +50,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private static final String TAG = "RecyclerViewActivity";
     protected static final String JSON_SAVE_RETRIEVE = "jsonX";
-    private static final int RECYCLER_VIEW_NOTIFICATION_ID = 1;
-    private static final String RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID = "channel1";
 
     private NotificationManagerCompat notificationManager;
 
@@ -80,8 +78,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
-        notificationClass = new NotificationClass(getApplicationContext());
         Log.d(TAG, "onCreate: ");
+        notificationClass = new NotificationClass(RecyclerViewActivity.this);
+
 
 
         notificationManager = NotificationManagerCompat.from(this);
@@ -102,19 +101,29 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         String googleProfPic = String.valueOf(googleSignInAccount.getPhotoUrl());
         User googleUser = new User(googleName, googleEmail, googleProfPic);
 
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        isAlreadyCalled = sharedPrefs.getBoolean("isDestroyedCalled", isAlreadyCalled);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove("isDestroyedCalled");
+        editor.apply();
 
-        Log.d(TAG, "onCreate: is Activity called" + isAlreadyCalled);
+
         if (!isAlreadyCalled) {
             try {
                 run();
                 userArrayList.add(googleUser);
+                Toast.makeText(this, "are you here", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             isAlreadyCalled = true;
-        } else {
+
+        }
+        //if destroy, it needs to go here
+        else{
             retrieveData();
             Log.d(TAG, "onCreate: DATA RETRIEVED BCUZ YOU ARE COMING FROM OTHER ACTIVITY");
+            Toast.makeText(this, "ORRRR  are you here", Toast.LENGTH_SHORT).show();
         }
 
         recyclerView.setHasFixedSize(true);
@@ -124,7 +133,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         //click listener for sign out
         findViewById(R.id.sign_out_button).setOnClickListener(this);
-
     }
 
     @Override
@@ -139,10 +147,12 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     @Override
     protected void onPause() {
         super.onPause();
-        saveData();
-        //Notification control between activities
+        //Notification control between activ
+        saveData();ities
         if (!isActivityCalled) {
-            notificationClass.createNotificationChannel();
+            notificationClass.createNotificationChannel(getClass());
+            //on destroy control
+            notificationClass.onDestroyControl();
         }
         Log.d(TAG, "onPause: ");
 
@@ -152,7 +162,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy: ");
-
     }
 
     @Override
@@ -161,7 +170,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         //back button control
         Toast.makeText(this, "Please click LOG OUT to go Main Page", Toast.LENGTH_SHORT)
                 .show();
-
     }
 
     //sign out and go back to log in page
@@ -175,6 +183,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         isActivityCalled = true;
         isAlreadyCalled = false; // avoid retrieve memory data. if you log out, data will reset
         startActivity(intent);
+        finish();
 
     }
 
@@ -198,7 +207,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         Type type = new TypeToken<List<User>>() {
         }.getType();
         userArrayList = gson.fromJson(json, type);
-
     }
 
     //pulling info from json
@@ -244,7 +252,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         }
         userAdapter.notifyDataSetChanged();
     }
-
 
     @Override
     public void onClick(View view) {

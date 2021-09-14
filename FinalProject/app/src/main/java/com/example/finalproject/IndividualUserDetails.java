@@ -70,7 +70,6 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     String profPicValue, firstAndLastNameValue, emailValue;
     NotificationManagerCompat notificationManager;
     NotificationClass notificationClass;
-    Context context = this;
 
     static final int CAPTURE_IMAGE_REQUEST = 1000;
 
@@ -84,29 +83,15 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_individiual_user_details);
         userArrayList = new ArrayList<>();
-        notificationManager = NotificationManagerCompat.from(this);
-        notificationClass = new NotificationClass(getApplicationContext());
+        initialization();
 
-        Log.d(TAG, "onCreate: ");
-
-        profPic = findViewById(R.id.profile_pic_view);
-        firstAndLastName = findViewById(R.id.first_last_name);
-        email = findViewById(R.id.email);
-        goBackButton = findViewById(R.id.go_back_button);
-
-        //get the values from last intent
-        profPicValue = getIntent().getStringExtra("profilePic");
-        firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
-        emailValue = getIntent().getStringExtra("email");
-
-        //assign values
-        Picasso.get().load(profPicValue).transform(new CropCircleTransformation()).resize(400,400).into(profPic);
-        firstAndLastName.setText(firstAndLastNameValue);
-        email.setText(emailValue);
 
         //click listeners
         goBackButton.setOnClickListener(this);
         profPic.setOnClickListener(this);
+
+        notificationClass = new NotificationClass(this);
+        notificationManager = NotificationManagerCompat.from(this);
 
     }
 
@@ -122,12 +107,15 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     @Override
     protected void onPause() {
         super.onPause();
-        //saving it when user leaves the app
         saveIt();
         //calling notification if user doesn't moving between activities
         if (!RecyclerViewActivity.isActivityCalled) {
-            notificationClass.createNotificationChannel();
+            notificationClass.createNotificationChannel(getClass(),getIntent().getStringExtra("profilePic"),
+                    getIntent().getStringExtra("firstAndLastName"),getIntent().getStringExtra("email"));
+
         }
+        //on destroy control
+        notificationClass.onDestroyControl();
         Log.d(TAG, "onPause: Is Activity Called:" + isActivityCalled);
     }
 
@@ -144,7 +132,6 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         Toast.makeText(this, "Back Button Pressed", Toast.LENGTH_SHORT)
                 .show();
         goBackToRecyclerView();
-
     }
 
     //go back button calls the method
@@ -154,6 +141,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         intent = new Intent(this, RecyclerViewActivity.class);
         RecyclerViewActivity.isActivityCalled = true;
         startActivity(intent);
+        finish();
     }
 
     //saving data.
@@ -200,13 +188,8 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
 
 
     /*
-    Pull saved files
-    Open Camera
-    create file and initialize the file
-    get Uri to the specific path
-    capture image
-    assign to person profile pic
-    save back to shared preferences
+    Pull saved files, Open Camera, create file and initialize the file
+    get Uri to the specific path, capture image, assign to person profile pic
      */
     @SuppressLint("QueryPermissionsNeeded")
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -322,5 +305,23 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
                 openDialog();
                 break;
         }
+    }
+
+    public void initialization(){
+        profPic = findViewById(R.id.profile_pic_view);
+        firstAndLastName = findViewById(R.id.first_last_name);
+        email = findViewById(R.id.email);
+        goBackButton = findViewById(R.id.go_back_button);
+
+
+        //get the values from last intent
+        profPicValue = getIntent().getStringExtra("profilePic");
+        firstAndLastNameValue = getIntent().getStringExtra("firstAndLastName");
+        emailValue = getIntent().getStringExtra("email");
+
+        //assign values
+        Picasso.get().load(profPicValue).transform(new CropCircleTransformation()).resize(400,400).into(profPic);
+        firstAndLastName.setText(firstAndLastNameValue);
+        email.setText(emailValue);
     }
 }
