@@ -60,6 +60,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
+    NotificationClass notificationClass;
 
     private static ArrayList<User> userArrayList;
     public static boolean isActivityCalled = false;
@@ -79,6 +80,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
+        notificationClass = new NotificationClass(getApplicationContext());
         Log.d(TAG, "onCreate: ");
 
 
@@ -129,6 +131,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onResume() {
         super.onResume();
         isActivityCalled = false;
+        notificationManager.cancelAll(); //cancel all background notification when user is back
         Log.d(TAG, "onResume: ");
     }
 
@@ -139,7 +142,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         saveData();
         //Notification control between activities
         if (!isActivityCalled) {
-            recyclerViewNotification();
+            notificationClass.createNotificationChannel();
         }
         Log.d(TAG, "onPause: ");
 
@@ -196,33 +199,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         }.getType();
         userArrayList = gson.fromJson(json, type);
 
-    }
-
-    //sending notification uniquely for each activity
-    public void recyclerViewNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel1 = new NotificationChannel(RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID, "channel1", NotificationManager.IMPORTANCE_HIGH);
-            channel1.setDescription("This is IndividualUserDetails channel1");
-
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel1);
-        }
-
-
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), PendingIntent.FLAG_IMMUTABLE);
-
-        Notification notification = new NotificationCompat.Builder(this, RECYCLER_VIEW_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.btn_star)
-                .setContentTitle("Information Page")
-                .setContentText("Don't Forget About Me!")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setContentIntent(contentIntent)
-                .setAutoCancel(true)
-                .build();
-
-
-        notificationManager.notify(RECYCLER_VIEW_NOTIFICATION_ID, notification);
     }
 
     //pulling info from json

@@ -22,6 +22,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -60,8 +61,7 @@ import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 public class IndividualUserDetails extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "IndividualUserDetails";
-    private static final int INDIVIDUAL_USER_NOTIFICATION_ID = 0;
-    private static final String INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID = "channel0";
+
     private ImageView profPic;
     private EditText firstAndLastName, email;
     private Button goBackButton;
@@ -69,6 +69,8 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     private ArrayList<User> userArrayList;
     String profPicValue, firstAndLastNameValue, emailValue;
     NotificationManagerCompat notificationManager;
+    NotificationClass notificationClass;
+    Context context = this;
 
     static final int CAPTURE_IMAGE_REQUEST = 1000;
 
@@ -83,6 +85,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         setContentView(R.layout.activity_individiual_user_details);
         userArrayList = new ArrayList<>();
         notificationManager = NotificationManagerCompat.from(this);
+        notificationClass = new NotificationClass(getApplicationContext());
 
         Log.d(TAG, "onCreate: ");
 
@@ -112,6 +115,8 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         super.onResume();
         //Notification control between activities
         RecyclerViewActivity.isActivityCalled = false;
+        notificationManager.cancelAll(); //cancel all background notification when user is back
+        Log.d(TAG, "onResume: ");
     }
 
     @Override
@@ -121,7 +126,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         saveIt();
         //calling notification if user doesn't moving between activities
         if (!RecyclerViewActivity.isActivityCalled) {
-            individualUserNotification();
+            notificationClass.createNotificationChannel();
         }
         Log.d(TAG, "onPause: Is Activity Called:" + isActivityCalled);
     }
@@ -261,31 +266,6 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         saveIt();
     }
 
-    //sending notification uniquely for each activity
-    public void individualUserNotification() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel0 = new NotificationChannel(INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID, "channel0", NotificationManager.IMPORTANCE_HIGH);
-            channel0.setDescription("This is IndividualUserDetails channel0");
-
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel0);
-        }
-
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, getIntent(), PendingIntent.FLAG_IMMUTABLE);
-
-        Notification notification = new NotificationCompat.Builder(this, INDIVIDUAL_USER_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.btn_star)
-                .setContentTitle("User Details")
-                .setContentText("Don't Forget About Me!")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setContentIntent(contentIntent)
-                .setAutoCancel(true)
-                .build();
-
-        notificationManager.notify(INDIVIDUAL_USER_NOTIFICATION_ID, notification);
-    }
 
     //onSaveInstanceState for if the page pushes back or if phone rotate
     @Override
