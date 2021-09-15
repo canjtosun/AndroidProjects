@@ -23,7 +23,7 @@ import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     Context context;
-    private ArrayList<User> userArrayList;
+    private final ArrayList<User> userArrayList;
 
     //constructor
     public UserAdapter(Context context, ArrayList<User> userArrayList) {

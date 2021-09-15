@@ -2,7 +2,6 @@ package com.example.finalproject;
 
 
 import static com.example.finalproject.RecyclerViewActivity.JSON_SAVE_RETRIEVE;
-import static com.example.finalproject.RecyclerViewActivity.isActivityCalled;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -10,19 +9,12 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -69,7 +61,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     private ArrayList<User> userArrayList;
     String profPicValue, firstAndLastNameValue, emailValue;
     NotificationManagerCompat notificationManager;
-    NotificationClass notificationClass;
+    UtilityClass utilityClass;
 
     static final int CAPTURE_IMAGE_REQUEST = 1000;
 
@@ -85,12 +77,11 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         userArrayList = new ArrayList<>();
         initialization();
 
-
         //click listeners
         goBackButton.setOnClickListener(this);
         profPic.setOnClickListener(this);
 
-        notificationClass = new NotificationClass(this);
+        utilityClass = new UtilityClass(this);
         notificationManager = NotificationManagerCompat.from(this);
 
     }
@@ -109,14 +100,14 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         super.onPause();
         saveIt();
         //calling notification if user doesn't moving between activities
+        //and retrieving information via sharedPreferences from adapter/showAllInformation
         if (!RecyclerViewActivity.isActivityCalled) {
-            notificationClass.createNotificationChannel(getClass(),getIntent().getStringExtra("profilePic"),
-                    getIntent().getStringExtra("firstAndLastName"),getIntent().getStringExtra("email"));
-
+            utilityClass.createNotificationChannel(getClass(), getIntent().getStringExtra("profilePic"),
+                    getIntent().getStringExtra("firstAndLastName"), getIntent().getStringExtra("email"));
         }
-        //on destroy control
-        notificationClass.onDestroyControl();
-        Log.d(TAG, "onPause: Is Activity Called:" + isActivityCalled);
+        //on destroy control. if user swipe it out(called on destroy) save a boolean via
+        //sharedPreferences and assign it back when click notification
+        utilityClass.onDestroyControl();
     }
 
     @Override
@@ -128,7 +119,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
-        //back button control
+        //back button control, if user clicks back button, we save the data without putting the stack
         Toast.makeText(this, "Back Button Pressed", Toast.LENGTH_SHORT)
                 .show();
         goBackToRecyclerView();
@@ -145,8 +136,8 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
     }
 
     //saving data.
-    // if data changes by user, finding the right data, changing it
-    //and pushing back to json style in memory with SharedPreferences
+    // if data changes by user -> finding the right data -> changing it ->
+    //and pushing back to json style into memory with SharedPreferences
     public void saveIt() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Gson gson = new Gson();
@@ -270,7 +261,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
 
     }
 
-    public void openDialog(){
+    public void openDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Do you want to change profile picture?");
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
@@ -280,14 +271,9 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
                 openCamera();
             }
         });
-
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing
-                dialog.dismiss();
-            }
+        //do nothing if user clicks "No"
+        builder.setNegativeButton("NO", (dialog, which) -> {
+            dialog.dismiss();
         });
 
         AlertDialog alert = builder.create();
@@ -307,7 +293,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         }
     }
 
-    public void initialization(){
+    public void initialization() {
         profPic = findViewById(R.id.profile_pic_view);
         firstAndLastName = findViewById(R.id.first_last_name);
         email = findViewById(R.id.email);
@@ -320,7 +306,7 @@ public class IndividualUserDetails extends AppCompatActivity implements View.OnC
         emailValue = getIntent().getStringExtra("email");
 
         //assign values
-        Picasso.get().load(profPicValue).transform(new CropCircleTransformation()).resize(400,400).into(profPic);
+        Picasso.get().load(profPicValue).transform(new CropCircleTransformation()).resize(400, 400).into(profPic);
         firstAndLastName.setText(firstAndLastNameValue);
         email.setText(emailValue);
     }

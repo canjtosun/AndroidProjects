@@ -1,9 +1,7 @@
 package com.example.finalproject;
 
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,13 +15,8 @@ import com.google.gson.reflect.TypeToken;
 
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -58,7 +51,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
-    NotificationClass notificationClass;
+    UtilityClass utilityClass;
 
     private static ArrayList<User> userArrayList;
     public static boolean isActivityCalled = false;
@@ -79,9 +72,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
         Log.d(TAG, "onCreate: ");
-        notificationClass = new NotificationClass(RecyclerViewActivity.this);
-
-
+        utilityClass = new UtilityClass(RecyclerViewActivity.this);
 
         notificationManager = NotificationManagerCompat.from(this);
 
@@ -94,36 +85,40 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
         //pulling the google information but not adding
         //this info sometimes not pulling correctly, so it cause error
-
+        String googleName, googleEmail, googleProfPic;
         googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
-        String googleName = googleSignInAccount.getDisplayName();
-        String googleEmail = googleSignInAccount.getEmail();
-        String googleProfPic = String.valueOf(googleSignInAccount.getPhotoUrl());
+        if(String.valueOf(googleSignInAccount.getPhotoUrl()).isEmpty())
+            googleProfPic = "https://icon-library.com/images/google-user-icon/google-user-icon-16.jpg";
+        else
+            googleProfPic = String.valueOf(googleSignInAccount.getPhotoUrl());
+
+        googleName = googleSignInAccount.getDisplayName();
+        googleEmail = googleSignInAccount.getEmail();
         User googleUser = new User(googleName, googleEmail, googleProfPic);
 
+        //SharedPreferences for if app calls onDestroy. This block of code makes sure if user
+        //does NOT log out and closes the app, we retrieve the data back
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         isAlreadyCalled = sharedPrefs.getBoolean("isDestroyedCalled", isAlreadyCalled);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove("isDestroyedCalled");
+        editor.remove("isDestroyedCalled"); //after initialize the arraylist from json, we are removing shared preferences
         editor.apply();
 
 
-        if (!isAlreadyCalled) {
+        if (!isAlreadyCalled) { //new initialization, when user logged in.
             try {
                 run();
                 userArrayList.add(googleUser);
-                Toast.makeText(this, "are you here", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             isAlreadyCalled = true;
 
         }
-        //if destroy, it needs to go here
+        //if destroys, coming from other activities with saved data, then retrieve data
         else{
             retrieveData();
-            Log.d(TAG, "onCreate: DATA RETRIEVED BCUZ YOU ARE COMING FROM OTHER ACTIVITY");
-            Toast.makeText(this, "ORRRR  are you here", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "onCreate: DATA RETRIEVED BECAUSE YOU ARE COMING FROM OTHER ACTIVITY, OR APP DESTROYED");
         }
 
         recyclerView.setHasFixedSize(true);
@@ -147,12 +142,13 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     @Override
     protected void onPause() {
         super.onPause();
-        //Notification control between activ
-        saveData();ities
+        //Notification control between activities
+        saveData();
         if (!isActivityCalled) {
-            notificationClass.createNotificationChannel(getClass());
-            //on destroy control
-            notificationClass.onDestroyControl();
+            utilityClass.createNotificationChannel(getClass());
+            //on destroy control. if user swipe it out(called on destroy) save a boolean via
+            //sharedPreferences and assign it back when click notification
+            utilityClass.onDestroyControl();
         }
         Log.d(TAG, "onPause: ");
 
@@ -183,7 +179,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         isActivityCalled = true;
         isAlreadyCalled = false; // avoid retrieve memory data. if you log out, data will reset
         startActivity(intent);
-        finish();
+        finish(); //finish the activity, so doesn't go stack
 
     }
 
