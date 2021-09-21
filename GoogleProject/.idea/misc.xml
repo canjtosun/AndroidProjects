@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/layout/activity_add_user.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/activity_add_user2.xml" value="0.2535554362847879" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.3328804347826087" />
+        <entry key="app/src/main/res/layout/activity_main2.xml" value="0.3328804347826087" />
+        <entry key="app/src/main/res/layout/activity_maps.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/activity_save_read_file.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/card_layout.xml" value="0.29791666666666666" />
+        <entry key="app/src/main/res/layout/xx.xml" value="0.3338541666666667" />
+        <entry key="app/src/main/res/menu/add_user_menu.xml" value="0.2484375" />
+        <entry key="app/src/main/res/menu/main_menu.xml" value="0.17083333333333334" />
+        <entry key="app/src/main/res/menu/map_options.xml" value="0.41354166666666664" />
+        <entry key="app/src/main/res/xml/file_paths.xml" value="0.3338541666666667" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
