@@ -7,7 +7,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,9 +38,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         Log.d(TAG, "onCreate: ");
-
-
+        users = new ArrayList<>();
         userLocationList = new ArrayList<>();
+
+
         Intent intent = getIntent();
         Bundle args = intent.getBundleExtra("bundle");
         users = (List<User>) args.getSerializable("jsonList");
@@ -48,6 +51,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userLocationList.add(new LatLng(lat, lng));
         }
 
+
+
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map, mapFragment).commit();
@@ -55,23 +60,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Log.d(TAG, "onResume: ");
-//        isStartingActivity = false;
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        Log.d(TAG, "onPause: ");
-//        Intent intent = new Intent(this, ExampleService.class);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-//                && !isStartingActivity ) {
-//            startForegroundService(intent);
-//        }
-//    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
+        isStartingActivity = false;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+        Intent intent = new Intent(this, ExampleService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !isStartingActivity ) {
+            startService(intent);
+        }
+    }
 
     @Override
     public void onBackPressed() {

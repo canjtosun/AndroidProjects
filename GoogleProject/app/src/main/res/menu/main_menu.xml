@@ -17,4 +17,10 @@
         android:title="File and Image Activity"
         app:showAsAction="never"/>
 
+    <item
+        android:id="@+id/log_out_icon"
+        android:icon="@drawable/ic_sign_out"
+        android:title="Sign Out"
+        app:showAsAction="ifRoom"/>
+
 </menu>

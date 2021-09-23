@@ -64,13 +64,13 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         userList = (List<User>) args.getSerializable("jsonList");
         Log.d(TAG, "onCreate: " + userList.size());
 
+
         saveFile.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
                 requestStoragePermission();
                 saveFile();
-                Toast.makeText(SaveReadFileActivity.this, "Saving Completed", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -106,7 +106,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         Intent intent = new Intent(SaveReadFileActivity.this, ExampleService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && !isStartingActivity) {
-            startForegroundService(intent);
+            startService(intent);
         }
 
     }
@@ -180,6 +180,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
                 }
             }
         }
+        isStartingActivity = true;
     }
 
 
@@ -221,6 +222,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
                 Toast.makeText(this, "Something wrong with the SD CARD", Toast.LENGTH_SHORT).show();
             }
         }
+        isStartingActivity = true;
 
     }
 

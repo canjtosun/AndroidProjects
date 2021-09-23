@@ -1,5 +1,6 @@
 package com.example.googleproject;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,9 +20,11 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,7 +58,6 @@ import okhttp3.ResponseBody;
 public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener, Serializable {
 
     private UserViewModel userViewModel;
-    private Button signOutButton;
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInAccount googleSignInAccount;
     private static final String INFOURL = "https://jsonplaceholder.typicode.com/users";
@@ -73,6 +75,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     User[] users;
     AlarmManager alarmManager;
     Intent serviceIntent;
+    SharedPreferences sharedPreferences;
 
 
     @Override
@@ -88,7 +91,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         client = new OkHttpClient();
         gson = new Gson();
         adapter = new UserAdapter(jsonArrayList);
-        signOutButton = findViewById(R.id.sign_in_button);
         recyclerView = findViewById(R.id.recViewUser);
         serviceIntent = new Intent(this, ExampleService.class);
 
@@ -99,11 +101,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         /*
         Alarm Manager for every minute
         */
-        alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent alarmIntent = new Intent(this, ExampleService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, alarmIntent, 0);
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
-                60*1000, pendingIntent);
+//        alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+//        Intent alarmIntent = new Intent(this, ExampleService.class);
+//        PendingIntent pendingIntent = PendingIntent.getService(this, 0, alarmIntent, 0);
+//        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
+//                60*1000, pendingIntent);
 
         /*
         Airplane Mode Receiver
@@ -112,7 +114,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         this.registerReceiver(receiver,intentFilter);
 
-        
 
 
 
@@ -149,7 +150,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         Floating Button -> Add User
         Item On Click -> Update User
         */
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.button_add_user).setOnClickListener(this);
         adapter.setOnItemClickListener(new UserAdapter.OnItemClickListener() {
             @Override
@@ -169,14 +169,18 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
 
         /*
-        isAlreadyCalled is a flag.
+        sharedPreferences is a flag.
         If we already initialize the json to the recyclerview,
         it is preventing us loading over and over again.
         so after that, we only use database values.
         */
-        if (!isAlreadyCalled) {
+        sharedPreferences = getSharedPreferences("CAN", Context.MODE_PRIVATE);
+
+        if (sharedPreferences.getString("First", null) == null) {
             run();
-            isAlreadyCalled = true;
+            SharedPreferences.Editor edit = sharedPreferences.edit();
+            edit.putString("First", "first_login");
+            edit.apply();
         }
 
         /*
@@ -215,8 +219,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         Log.d(TAG, "onPause: " + isStartingActivity);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
         && !isStartingActivity ) {
-            startForegroundService(serviceIntent);
-            finish();
+            startService(serviceIntent);
         }
     }
 
@@ -345,12 +348,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     public void goMapsActivity(){
         Intent intent = new Intent(this, MapsActivity.class);
-        isStartingActivity = true;
         Bundle args = new Bundle();
         args.putSerializable("jsonList", (Serializable) jsonArrayList);
         intent.putExtra("bundle", args);
+        isStartingActivity = true;
         startActivity(intent);
-        finish();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -391,6 +393,10 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                     saveUsersToTxtFile();
                 }
                 return true;
+            case R.id.log_out_icon:
+                signOutAndGoBack();
+                Toast.makeText(RecyclerViewActivity.this, "Logged Out", Toast.LENGTH_SHORT).show();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -402,9 +408,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.sign_out_button:
-                signOutAndGoBack();
-                break;
             case R.id.button_add_user:
                 goSaveUser();
                 break;

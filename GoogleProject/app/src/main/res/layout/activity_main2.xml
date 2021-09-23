@@ -11,19 +11,9 @@
         android:id="@+id/recViewUser"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        tools:listitem="@layout/card_layout"
-        android:background="@color/white"/>
+        android:background="@color/white"
+        tools:listitem="@layout/card_layout" />
 
-    <Button
-        android:id="@+id/sign_out_button"
-        android:layout_marginLeft="300dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12dp"
-        android:backgroundTint="@color/black"
-        android:textColor="@color/white"
-        android:text="LOG OUT" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_add_user"

@@ -48,4 +48,13 @@
         android:layout_marginTop="280dp"
         android:layout_marginLeft="120dp"
         android:text="Lng" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/button_send_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="520dp"
+        android:layout_marginLeft="320dp"
+        android:src="@drawable/ic_email" />
+
 </RelativeLayout>

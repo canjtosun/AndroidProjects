@@ -73,7 +73,14 @@ public class AddUserActivity extends AppCompatActivity {
 
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
 
+        //Floating Button ClickListener
         editImageView.setOnClickListener(view -> openDialog());
+        findViewById(R.id.button_send_email).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendEmailToUser();
+            }
+        });
 
 
         Intent intent = getIntent();
@@ -108,8 +115,7 @@ public class AddUserActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && !isStartingActivity ) {
             Log.d(TAG, "onPause: in if loop");
-            startForegroundService(intent);
-            finish();
+            startService(intent);
         }
     }
 
@@ -283,4 +289,17 @@ public class AddUserActivity extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
+
+    public void sendEmailToUser(){
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_TEXT, "Hello, "+ editTextName.getText().toString());
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{editTextEmail.getText().toString()});
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Test");
+        Intent chooser = Intent.createChooser(intent, "Send Email");
+        isStartingActivity = true;
+        startActivity(chooser);
+    }
+
 }
