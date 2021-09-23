@@ -13,8 +13,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.location.GPS_ENABLED_CHANGE" />
 
     <uses-feature
@@ -31,6 +29,7 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".SaveReadFileActivity"
+            android:screenOrientation="portrait"
             android:exported="true" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -50,6 +49,8 @@
         <activity
             android:name=".MapsActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:screenOrientation="sensor"
             android:label="@string/title_activity_maps" />
 
         <provider
@@ -66,16 +67,17 @@
             android:name=".AddUserActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
-            android:parentActivityName=".MainActivity2"
+            android:parentActivityName=".RecyclerViewActivity"
             android:screenOrientation="sensor" />
         <activity
-            android:name=".MainActivity2"
+            android:name=".RecyclerViewActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="sensor" />
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -87,7 +89,10 @@
         <service
             android:name=".ExampleService"
             android:foregroundServiceType="camera|location" />
-        <receiver android:name=".AlarmService"/>
+
+        <receiver
+            android:name=".AlarmService"
+            android:exported="true"/>
 
     </application>
 

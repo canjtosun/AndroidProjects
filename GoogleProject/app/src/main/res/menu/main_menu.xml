@@ -14,7 +14,7 @@
 
     <item
         android:id="@+id/save_users_to_txt_file"
-        android:title="Save Users To File"
+        android:title="File and Image Activity"
         app:showAsAction="never"/>
 
 </menu>

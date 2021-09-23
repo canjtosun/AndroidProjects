@@ -73,10 +73,9 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "email='" + email +
-                ", name='" + name +
-                ", address=" + address.getGeo().toString() +
-                '\n';
+        return "Full Name: " + name +
+                "\nEmail: " + email +
+                "\nLocation: " + address.getGeo().toString() + "\n";
     }
 }
 
@@ -126,9 +125,6 @@ class Geo implements Serializable {
 
     @Override
     public String toString() {
-        return "Geo{" +
-                "lat='" + lat + '\'' +
-                ", lng='" + lng + '\'' +
-                '}';
+        return "Lat: " + lat + " Lng: " + lng;
     }
 }

@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (googleSignInAccount != null) {
 
-            Intent intent = new Intent(this, MainActivity2.class);
+            Intent intent = new Intent(this, RecyclerViewActivity.class);
             startActivity(intent);
 
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);

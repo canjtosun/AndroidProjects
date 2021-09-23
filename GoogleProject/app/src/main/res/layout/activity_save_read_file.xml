@@ -11,40 +11,45 @@
         android:id="@+id/save_to_file"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="24dp"
         android:text="Save"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.277"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.082" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/read_into_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
-        android:layout_marginEnd="80dp"
+        android:layout_marginStart="240dp"
+        android:layout_marginTop="24dp"
         android:text="Read"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.011"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.081" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/show_into_textview"
-        android:layout_width="286dp"
-        android:layout_height="438dp"
+        android:layout_width="341dp"
+        android:layout_height="206dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="84dp"
+        android:scrollbars="vertical"
         android:text="The list will be here"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/photo_from_file"
+        android:layout_width="216dp"
+        android:layout_height="172dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.751"
-        android:scrollbars = "vertical"/>
-
+        app:layout_constraintTop_toBottomOf="@+id/show_into_textview"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_image_search" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

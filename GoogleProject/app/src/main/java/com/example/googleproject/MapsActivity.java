@@ -1,25 +1,23 @@
 package com.example.googleproject;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
+import android.os.Build;
 import android.os.Bundle;
-
+import android.util.Log;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,12 +27,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     List<LatLng> userLocationList;
     List<User> users;
+    public static boolean isStartingActivity = false;
     private static final int PERMISSION_REQUEST_LOCATION = 0;
+    private static final String TAG = "MapsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        Log.d(TAG, "onCreate: ");
 
 
         userLocationList = new ArrayList<>();
@@ -54,14 +55,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        Log.d(TAG, "onResume: ");
+//        isStartingActivity = false;
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        Log.d(TAG, "onPause: ");
+//        Intent intent = new Intent(this, ExampleService.class);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+//                && !isStartingActivity ) {
+//            startForegroundService(intent);
+//        }
+//    }
 
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity2.class);
+        Intent intent = new Intent(this, RecyclerViewActivity.class);
         startActivity(intent);
+        isStartingActivity = true;
         finish();
     }
+
 
     @SuppressLint("MissingPermission")
     private void enableMyLocation(GoogleMap map) {
@@ -88,8 +108,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d(TAG, "onMapReady: ");
         mMap = googleMap;
 
         for (int i = 0; i < userLocationList.size(); i++) {

@@ -63,6 +63,7 @@ public class AddUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_user);
+        Log.d(TAG, "onCreate: ");
 
         editTextName = findViewById(R.id.first_last_name);
         editTextEmail = findViewById(R.id.email);
