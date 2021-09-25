@@ -1,24 +1,19 @@
 package com.example.googleproject;
 
-import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
-
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -30,23 +25,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
-
-
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.Tasks;
 import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
@@ -55,18 +45,18 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener, Serializable {
+public class RecyclerViewActivity extends AppCompatActivity implements View.OnClickListener,
+        Serializable{
 
     private UserViewModel userViewModel;
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInAccount googleSignInAccount;
     private static final String INFOURL = "https://jsonplaceholder.typicode.com/users";
     private static final String PICSURL = "https://robohash.org/";
+    private static final String ALREADYCALLED = "isAlreadyCalled";
     public static final int ADDUSERREQUEST = 1;
     public static final int UPDATEUSERREQUEST = 2;
     private static final String TAG = "RecyclerViewActivity";
-    public static boolean isAlreadyCalled = false;
-    public static boolean isStartingActivity = false;
     OkHttpClient client;
     public static List<User> jsonArrayList; //one time list
     Gson gson;
@@ -82,6 +72,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        setTitle("Your List");
         Log.d(TAG, "onCreate: ");
 
         /*
@@ -101,11 +92,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         /*
         Alarm Manager for every minute
         */
-//        alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-//        Intent alarmIntent = new Intent(this, ExampleService.class);
-//        PendingIntent pendingIntent = PendingIntent.getService(this, 0, alarmIntent, 0);
-//        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
-//                60*1000, pendingIntent);
+        alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent alarmIntent = new Intent(this, ExampleService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, alarmIntent, 0);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
+                60*1000, pendingIntent);
 
         /*
         Airplane Mode Receiver
@@ -114,6 +105,10 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         this.registerReceiver(receiver,intentFilter);
 
+        /*
+        Class Holder
+        */
+        classHolder();
 
 
 
@@ -161,7 +156,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
                 intent.putExtra(AddUserActivity.ADD_OR_UPDATE_USER_PROF_PIC, user.getProfilePic());
                 intent.putExtra(AddUserActivity.USER_LAT, user.getAddress().getGeo().getLat());
                 intent.putExtra(AddUserActivity.USER_LNG, user.getAddress().getGeo().getLng());
-                isStartingActivity = true;
                 startActivityForResult(intent, UPDATEUSERREQUEST);
 
             }
@@ -174,12 +168,11 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         it is preventing us loading over and over again.
         so after that, we only use database values.
         */
-        sharedPreferences = getSharedPreferences("CAN", Context.MODE_PRIVATE);
-
-        if (sharedPreferences.getString("First", null) == null) {
+        sharedPreferences = getSharedPreferences(ALREADYCALLED, Context.MODE_PRIVATE);
+        if (sharedPreferences.getString("callOnce", null) == null) {
             run();
             SharedPreferences.Editor edit = sharedPreferences.edit();
-            edit.putString("First", "first_login");
+            edit.putString("callOnce", "call_once");
             edit.apply();
         }
 
@@ -203,32 +196,13 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
             }
         }).attachToRecyclerView(recyclerView);
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
-        isStartingActivity = false;
+        /*
+        LifecycleObserver for when app goes background
+        */
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new LcoNotification(this));
 
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: " + isStartingActivity);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-        && !isStartingActivity ) {
-            startService(serviceIntent);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
-        //stopService(new Intent(this,ExampleService.class)).;
-    }
 
     @Override
     public void onBackPressed() {
@@ -334,7 +308,6 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.signOut();
         Intent intent = new Intent(this, MainActivity.class);
-        isStartingActivity = true;
         startActivity(intent);
         finish(); //finish the activity, so doesn't go stack
 
@@ -342,28 +315,32 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     public void goSaveUser() {
         Intent intent = new Intent(RecyclerViewActivity.this, AddUserActivity.class);
-        isStartingActivity = true;
         startActivityForResult(intent,ADDUSERREQUEST);
     }
 
     public void goMapsActivity(){
         Intent intent = new Intent(this, MapsActivity.class);
-        Bundle args = new Bundle();
-        args.putSerializable("jsonList", (Serializable) jsonArrayList);
-        intent.putExtra("bundle", args);
-        isStartingActivity = true;
+//        Bundle args = new Bundle();
+//        args.putSerializable("jsonList", (Serializable) jsonArrayList);
+//        intent.putExtra("bundle", args);
+        saveDataIntoSharedPreferences();
         startActivity(intent);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+//    @RequiresApi(api = Build.VERSION_CODES.N)
+//    public void saveUsersToTxtFile(){
+//        Intent intent = new Intent(this, SaveReadFileActivity.class);
+//        Bundle args = new Bundle();
+//        args.putSerializable("jsonList", (Serializable) jsonArrayList);
+//        intent.putExtra("bundle", args);
+//        startActivity(intent);
+//        finish();
+//    }
+
     public void saveUsersToTxtFile(){
         Intent intent = new Intent(this, SaveReadFileActivity.class);
-        isStartingActivity = true;
-        Bundle args = new Bundle();
-        args.putSerializable("jsonList", (Serializable) jsonArrayList);
-        intent.putExtra("bundle", args);
+        saveDataIntoSharedPreferences();
         startActivity(intent);
-        finish();
     }
 
     @Override
@@ -400,6 +377,23 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void saveDataIntoSharedPreferences(){
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(jsonArrayList);
+        editor.putString("jsonList", json);
+        editor.apply();
+    }
+
+    public void classHolder(){
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("lastClass", getClass().toString());
+        editor.apply();
     }
 
     /*

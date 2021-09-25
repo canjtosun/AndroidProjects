@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
+    android:layout_margin="2dp"
     app:cardBackgroundColor="#8A9DCC"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="8dp"
-    app:cardMaxElevation="10dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp"
+    app:cardMaxElevation="2dp"
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="true">
 
@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@+id/general_name"
-            android:layout_width="220dp"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
@@ -42,7 +42,7 @@
 
         <TextView
             android:id="@+id/general_email"
-            android:layout_width="220dp"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="50dp"

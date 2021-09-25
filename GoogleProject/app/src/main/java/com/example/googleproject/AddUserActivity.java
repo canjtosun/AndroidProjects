@@ -10,8 +10,10 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -57,7 +59,6 @@ public class AddUserActivity extends AppCompatActivity {
     File photoFile = null;
     Uri photoUri = null;
     String nameValue, emailValue, profPicValue, latValue, lngValue;
-    public static boolean isStartingActivity = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,28 +102,10 @@ public class AddUserActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
-        isStartingActivity = false;
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: " + isStartingActivity);
-        Intent intent = new Intent(this, ExampleService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !isStartingActivity ) {
-            Log.d(TAG, "onPause: in if loop");
-            startService(intent);
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         //super.onBackPressed();
-        Toast.makeText(this, "Please click save or cancel", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, RecyclerViewActivity.class));
+        finish();
     }
 
     private void saveUser() {
@@ -168,7 +151,6 @@ public class AddUserActivity extends AppCompatActivity {
             data.putExtra(USER_LNG, lngValue);
         }
 
-        isStartingActivity = true;
         setResult(RESULT_OK, data);
         finish();
     }
@@ -183,15 +165,13 @@ public class AddUserActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.save_user:
-                saveUser();
-                return true;
-            default:
-                isStartingActivity=true;
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.save_user) {
+            saveUser();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
+
 
 
 
@@ -222,7 +202,6 @@ public class AddUserActivity extends AppCompatActivity {
     public void openCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-            isStartingActivity = true;
             Log.d(TAG, "openCamera: after request open camera");
         } else {
             Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -233,7 +212,6 @@ public class AddUserActivity extends AppCompatActivity {
                         BuildConfig.APPLICATION_ID + ".provider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST);
-                isStartingActivity = true;
                 Log.d(TAG, "openCamera: last thing here activity should be true ");
             } catch (Exception ex) {
                 // Error occurred while creating the File
@@ -298,8 +276,6 @@ public class AddUserActivity extends AppCompatActivity {
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, "Test");
         Intent chooser = Intent.createChooser(intent, "Send Email");
-        isStartingActivity = true;
         startActivity(chooser);
     }
-
 }

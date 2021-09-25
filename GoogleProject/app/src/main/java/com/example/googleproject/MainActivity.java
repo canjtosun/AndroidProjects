@@ -3,7 +3,9 @@ package com.example.googleproject;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("Sign In to Google");
 
 
         //buttons for sign in and out
@@ -61,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SignInButton signInButton = findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
+
+        classHolder();
 
 
     }
@@ -138,6 +143,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         }
+    }
+
+    public void classHolder(){
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("lastClass", getClass().toString());
+        editor.apply();
     }
 
 

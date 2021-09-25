@@ -28,6 +28,21 @@
         android:theme="@style/Theme.GoogleProject"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="http"
+                    android:host="www.gmail.com"/>
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".SaveReadFileActivity"
             android:screenOrientation="portrait"
             android:exported="true" />
@@ -67,7 +82,6 @@
             android:name=".AddUserActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
-            android:parentActivityName=".RecyclerViewActivity"
             android:screenOrientation="sensor" />
         <activity
             android:name=".RecyclerViewActivity"
@@ -75,30 +89,6 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="sensor" />
-        <activity
-            android:name=".MainActivity"
-            android:screenOrientation="portrait"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="http"
-                    android:host="www.gmail.com"/>
-            </intent-filter>
-
-
-
-
-        </activity>
-
         <service
             android:name=".ExampleService"
             android:foregroundServiceType="camera|location" />

@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,6 +21,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +34,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     List<LatLng> userLocationList;
     List<User> users;
-    public static boolean isStartingActivity = false;
     private static final int PERMISSION_REQUEST_LOCATION = 0;
     private static final String TAG = "MapsActivity";
 
@@ -42,14 +46,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         userLocationList = new ArrayList<>();
 
 
-        Intent intent = getIntent();
-        Bundle args = intent.getBundleExtra("bundle");
-        users = (List<User>) args.getSerializable("jsonList");
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String json = sharedPrefs.getString("jsonList", "");
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<User>>() {
+        }.getType();
+        users = gson.fromJson(json, type);
         for (User u : users) {
             double lat = Double.parseDouble(u.getAddress().getGeo().getLat());
             double lng = Double.parseDouble(u.getAddress().getGeo().getLng());
             userLocationList.add(new LatLng(lat, lng));
         }
+
+        classHolder();
 
 
 
@@ -61,32 +70,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
-        isStartingActivity = false;
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: ");
-        Intent intent = new Intent(this, ExampleService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !isStartingActivity ) {
-            startService(intent);
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         //super.onBackPressed();
         Intent intent = new Intent(this, RecyclerViewActivity.class);
         startActivity(intent);
-        isStartingActivity = true;
         finish();
     }
-
 
     @SuppressLint("MissingPermission")
     private void enableMyLocation(GoogleMap map) {
@@ -127,5 +116,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         enableMyLocation(mMap);
 
+    }
+
+    public void classHolder(){
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("lastClass", getClass().toString());
+        editor.apply();
     }
 }

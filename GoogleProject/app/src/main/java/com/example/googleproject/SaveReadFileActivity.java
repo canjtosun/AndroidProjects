@@ -7,16 +7,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
+import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
@@ -25,11 +24,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,12 +48,12 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
     public static final String fileName = "myList.txt";
     private static final int PERMISSION_STORAGE = 102;
     public static final int PICK_IMAGE = 103;
-    public static boolean isStartingActivity = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_save_read_file);
+        setTitle("File and Image Activity");
         Log.d(TAG, "onCreate: ");
 
         saveFile = findViewById(R.id.save_to_file);
@@ -59,9 +63,17 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         photoFromFile = findViewById(R.id.photo_from_file);
         myLayout = findViewById(R.id.save_read_layout);
 
-        Intent intent = getIntent();
-        Bundle args = intent.getBundleExtra("bundle");
-        userList = (List<User>) args.getSerializable("jsonList");
+        classHolder();
+
+
+        userList = new ArrayList<>();
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String json = sharedPrefs.getString("jsonList", "");
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<User>>() {
+        }.getType();
+        userList = gson.fromJson(json, type);
         Log.d(TAG, "onCreate: " + userList.size());
 
 
@@ -93,31 +105,11 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: " + isStartingActivity);
-        isStartingActivity = false;
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: " + isStartingActivity);
-        Intent intent = new Intent(SaveReadFileActivity.this, ExampleService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !isStartingActivity) {
-            startService(intent);
-        }
-
-    }
-
-    @Override
     public void onBackPressed() {
         //super.onBackPressed();
         Intent intent = new Intent(this, RecyclerViewActivity.class);
         userList.clear();
         startActivity(intent);
-        isStartingActivity = true;
         finish();
     }
 
@@ -180,7 +172,6 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
                 }
             }
         }
-        isStartingActivity = true;
     }
 
 
@@ -201,7 +192,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
                     return;
                 }
                 StringBuffer sb = new StringBuffer();
-                int i = 0;
+                int i;
                 while (true) {
                     try {
                         if ((i = fis.read()) == -1)
@@ -222,15 +213,16 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
                 Toast.makeText(this, "Something wrong with the SD CARD", Toast.LENGTH_SHORT).show();
             }
         }
-        isStartingActivity = true;
 
     }
 
     public void bringImageFromStorage() {
         Log.d(TAG, "bringImageFromStorage: ");
-        Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        isStartingActivity = true;
-        startActivityForResult(i, PICK_IMAGE);
+        Intent i = new Intent();
+        i.setType("image/*");
+        i.setAction(Intent.ACTION_GET_CONTENT);
+        Intent chooser = Intent.createChooser(i, "Select Image");
+        startActivityForResult(chooser, PICK_IMAGE);
 
     }
 
@@ -240,16 +232,18 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         Log.d(TAG, "onActivityResult: ");
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri imageUri = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-            photoFromFile.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-            if (BitmapFactory.decodeFile(picturePath) == null) {
+            if (imageUri != null) {
+                photoFromFile.setImageURI(imageUri);
+            } else {
                 photoFromFile.setImageResource(R.drawable.ic_image_search);
             }
         }
+    }
+
+    public void classHolder(){
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("lastClass", getClass().toString());
+        editor.apply();
     }
 }
