@@ -80,7 +80,7 @@
 
         <activity
             android:name=".AddUserActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:configChanges="screenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:screenOrientation="sensor" />
         <activity
@@ -90,7 +90,7 @@
             android:launchMode="singleTop"
             android:screenOrientation="sensor" />
         <service
-            android:name=".ExampleService"
+            android:name=".NotificationService"
             android:foregroundServiceType="camera|location" />
 
         <receiver

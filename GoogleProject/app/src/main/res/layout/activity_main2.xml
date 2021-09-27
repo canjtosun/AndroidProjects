@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
     tools:context=".RecyclerViewActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recViewUser"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="#75878E"
         tools:listitem="@layout/card_layout" />
 
 

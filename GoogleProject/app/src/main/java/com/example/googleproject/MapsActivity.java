@@ -37,6 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int PERMISSION_REQUEST_LOCATION = 0;
     private static final String TAG = "MapsActivity";
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +47,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         userLocationList = new ArrayList<>();
 
 
+        /*
+        bring the saved information from recyclerView
+        assign to the user arraylist and iterate to list to assign
+        all the values to the specific person's location
+         */
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String json = sharedPrefs.getString("jsonList", "");
         Gson gson = new Gson();
@@ -58,8 +64,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userLocationList.add(new LatLng(lat, lng));
         }
 
+        //classHolder method saves the class name  to the sharedPreferences
         classHolder();
-
 
 
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
@@ -77,6 +83,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         finish();
     }
 
+
+    //enable the location with permission
     @SuppressLint("MissingPermission")
     private void enableMyLocation(GoogleMap map) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -102,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    //iterate the userLocationList and add marker to the map each one of them
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -118,8 +127,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    //classHolder method saves the class name  to the sharedPreferences
     public void classHolder(){
-        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("CLASS_KEY", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("lastClass", getClass().toString());
         editor.apply();

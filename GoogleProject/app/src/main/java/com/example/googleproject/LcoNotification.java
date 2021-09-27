@@ -11,13 +11,14 @@ public class LcoNotification implements LifecycleObserver {
 
     Context context;
 
+    //LifecycleObserver for sending notification when app goes background
     public LcoNotification(Context context) {
         this.context = context;
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void goesBack(){
-        Intent serviceNotification = new Intent(context, ExampleService.class);
+        Intent serviceNotification = new Intent(context, NotificationService.class);
         context.startService(serviceNotification);
     }
 

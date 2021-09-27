@@ -176,10 +176,11 @@ public class AddUserActivity extends AppCompatActivity {
 
 
 
-
-
     //Camera and Storage Implementations
 
+
+
+    //create a blank image file in pictures folder
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -197,6 +198,7 @@ public class AddUserActivity extends AppCompatActivity {
     }
 
 
+    //opening the camera after permission
     @SuppressLint("QueryPermissionsNeeded")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void openCamera() {
@@ -235,6 +237,8 @@ public class AddUserActivity extends AppCompatActivity {
         }
     }
 
+    //get the image and assign to file
+    //assign to file path as string to the photoValue for Picasso
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -249,6 +253,7 @@ public class AddUserActivity extends AppCompatActivity {
         }
     }
 
+    //ye - no dialog for camera
     public void openDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Do you want to change profile picture?");
@@ -268,6 +273,7 @@ public class AddUserActivity extends AppCompatActivity {
         alert.show();
     }
 
+    //createChooser action for pop up bottom of the screen for gmail
     public void sendEmailToUser(){
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.putExtra(Intent.EXTRA_TEXT, "Hello, "+ editTextName.getText().toString());

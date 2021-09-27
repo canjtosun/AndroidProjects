@@ -63,11 +63,13 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         photoFromFile = findViewById(R.id.photo_from_file);
         myLayout = findViewById(R.id.save_read_layout);
 
+        //classHolder method saves the class name  to the sharedPreferences
         classHolder();
 
 
         userList = new ArrayList<>();
 
+        //bringing everything from the json list to assign userList(ArrayList)
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String json = sharedPrefs.getString("jsonList", "");
         Gson gson = new Gson();
@@ -77,6 +79,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         Log.d(TAG, "onCreate: " + userList.size());
 
 
+        //clickListener for save button
         saveFile.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
@@ -86,6 +89,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
             }
         });
 
+        //clickListener for Read button
         readFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -94,6 +98,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
             }
         });
 
+        //clickListener for imageView
         photoFromFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,6 +118,11 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         finish();
     }
 
+    /*
+    According to the documentation
+    If your application already requests write access, it will automatically get read access as well.
+    Only asking a permission for writing to the external storage
+    */
     public void requestStoragePermission() {
         Log.d(TAG, "requestStoragePermission: ");
         boolean hasPermission = (ContextCompat.checkSelfPermission(this,
@@ -124,6 +134,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
@@ -131,6 +142,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         if (requestCode == PERMISSION_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_LONG).show();
+                saveFile();
             } else {
                 Toast.makeText(this, "Permission Denied. Please Consider Accepting", Toast.LENGTH_LONG).show();
             }
@@ -141,6 +153,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
 
     }
 
+    //Saving file method
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void saveFile() {
         Log.d(TAG, "saveFile: ");
@@ -175,6 +188,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
     }
 
 
+    //reading file method
     public void readFile() {
         Log.d(TAG, "readFile: ");
 
@@ -216,6 +230,7 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
 
     }
 
+    //brining image from sdcard
     public void bringImageFromStorage() {
         Log.d(TAG, "bringImageFromStorage: ");
         Intent i = new Intent();
@@ -240,8 +255,9 @@ public class SaveReadFileActivity extends AppCompatActivity implements ActivityC
         }
     }
 
+    //classHolder method saves the class name  to the sharedPreferences
     public void classHolder(){
-        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("CLASS_KEY", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("lastClass", getClass().toString());
         editor.apply();

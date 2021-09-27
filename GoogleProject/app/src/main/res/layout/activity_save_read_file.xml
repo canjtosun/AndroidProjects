@@ -5,6 +5,7 @@
     android:id="@+id/save_read_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background ="#FFFFE6"
     tools:context=".SaveReadFileActivity">
 
     <Button
@@ -34,7 +35,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="84dp"
         android:scrollbars="vertical"
-        android:text="The list will be here"
+        android:hint="The list will be here"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"

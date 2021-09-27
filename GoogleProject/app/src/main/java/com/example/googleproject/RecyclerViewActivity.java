@@ -30,7 +30,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.tasks.Tasks;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.Serializable;
@@ -83,7 +82,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         gson = new Gson();
         adapter = new UserAdapter(jsonArrayList);
         recyclerView = findViewById(R.id.recViewUser);
-        serviceIntent = new Intent(this, ExampleService.class);
+        serviceIntent = new Intent(this, NotificationService.class);
 
         //stop Service
         stopService(serviceIntent);
@@ -93,7 +92,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         Alarm Manager for every minute
         */
         alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent alarmIntent = new Intent(this, ExampleService.class);
+        Intent alarmIntent = new Intent(this, NotificationService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, alarmIntent, 0);
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(),
                 60*1000, pendingIntent);
@@ -301,6 +300,7 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
+    //sign out button on menu inflater. top of the page.
     private void signOutAndGoBack() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -313,11 +313,13 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 
     }
 
+    //creating intent to the save/update person information
     public void goSaveUser() {
         Intent intent = new Intent(RecyclerViewActivity.this, AddUserActivity.class);
         startActivityForResult(intent,ADDUSERREQUEST);
     }
 
+    //creating intent to go to maps activity
     public void goMapsActivity(){
         Intent intent = new Intent(this, MapsActivity.class);
 //        Bundle args = new Bundle();
@@ -337,12 +339,14 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
 //        finish();
 //    }
 
+    //creating intent for file save-read and image manipulation
     public void saveUsersToTxtFile(){
         Intent intent = new Intent(this, SaveReadFileActivity.class);
         saveDataIntoSharedPreferences();
         startActivity(intent);
     }
 
+    //inflating the menu. top of the page
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
@@ -379,6 +383,8 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
+    //saving data to the json style into sharedPreferences
+    // to bring it on other activities when needed
     public void saveDataIntoSharedPreferences(){
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -389,8 +395,9 @@ public class RecyclerViewActivity extends AppCompatActivity implements View.OnCl
         editor.apply();
     }
 
+    //classHolder method saves the class name  to the sharedPreferences
     public void classHolder(){
-        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("CLASS_KEY", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("lastClass", getClass().toString());
         editor.apply();

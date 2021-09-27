@@ -1,66 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relativeLayout"
+    android:background="#FFFFE6"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/profile_pic_view"
-        android:layout_width="115dp"
-        android:layout_height="135dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="150dp"
-        android:src="@drawable/ic_person" />
+        android:layout_width="182dp"
+        android:layout_height="199dp"
+        android:layout_marginStart="112dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_person"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/first_last_name"
-        android:layout_width="240dp"
-        android:layout_height="55dp"
-        android:layout_marginTop="160dp"
-        android:layout_marginLeft="50dp"
-        android:hint="First and Last Name"
-        android:textColor="@color/black"
-        android:textSize="18sp" />
-
-    <EditText
-        android:id="@+id/email"
-        android:layout_width="240dp"
-        android:layout_height="55dp"
-        android:layout_marginTop="220dp"
-        android:layout_marginLeft="50dp"
-        android:hint="Email"
-        android:inputType="textPersonName" />
 
     <ImageView
         android:id="@+id/camera_icon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="150dp"
-        android:src="@drawable/camera_icon"/>
+        android:layout_marginStart="268dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/camera_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/first_last_name"
+        android:layout_width="240dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="84dp"
+        android:layout_marginTop="228dp"
+        android:hint="First and Last Name"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="240dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="84dp"
+        android:layout_marginTop="288dp"
+        android:hint="Email"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/ic_location"
+        app:layout_constraintEnd_toStartOf="@+id/lat_view"
+        app:layout_constraintTop_toBottomOf="@+id/email" />
 
     <TextView
         android:id="@+id/lat_view"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="280dp"
-        android:layout_marginLeft="50dp"
-        android:text="Lat" />
+        android:layout_width="70dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="120dp"
+        android:layout_marginTop="356dp"
+        android:text="Lat"
+        app:flow_verticalAlign="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/lng_view"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
+        android:layout_width="70dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="196dp"
         android:layout_marginTop="280dp"
-        android:layout_marginLeft="120dp"
-        android:text="Lng" />
+        android:text="Lng"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.259" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_send_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="20dp"
-        android:src="@drawable/ic_email" />
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_email"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

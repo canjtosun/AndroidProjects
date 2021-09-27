@@ -145,8 +145,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //classHolder method saves the class name  to the sharedPreferences
     public void classHolder(){
-        SharedPreferences sharedPreferences = getSharedPreferences("GLOBALKEY", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("CLASS_KEY", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("lastClass", getClass().toString());
         editor.apply();
